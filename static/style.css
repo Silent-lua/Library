@@ -53,7 +53,40 @@ p {
 
     font-size: 18px;
 
-    margin-bottom: 35px;
+    margin-bottom: 25px;
+
+}
+
+
+.card {
+
+    background: #1a1a1a;
+
+    padding: 20px;
+
+    margin-bottom: 15px;
+
+    border-radius: 15px;
+
+    text-align: left;
+
+}
+
+
+.card h2 {
+
+    margin: 0 0 10px;
+
+    font-size: 20px;
+
+}
+
+
+.online {
+
+    color: #00ff88;
+
+    font-weight: bold;
 
 }
 
