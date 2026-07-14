@@ -1,26 +1,71 @@
-from flask import Flask, render_template
-import os
+<!DOCTYPE html>
+<html lang="es">
 
-app = Flask(__name__)
+<head>
 
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-@app.route("/")
-def inicio():
-    return render_template("index.html")
+<title>SilentHub Dashboard</title>
 
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
-@app.route("/panel")
-def panel():
-    return render_template("panel.html")
-
-
-@app.route("/lobby")
-def lobby():
-    return render_template("lobby.html")
+</head>
 
 
-if __name__ == "__main__":
-    app.run(
-        host="0.0.0.0",
-        port=int(os.environ.get("PORT", 5000))
-    )
+<body>
+
+
+<div class="container">
+
+
+<h1>SilentHub</h1>
+
+<p>
+Dashboard
+</p>
+
+
+<div class="card">
+
+<h2>Estado</h2>
+
+<p class="online">
+● {{ datos.estado }}
+</p>
+
+</div>
+
+
+
+<div class="card">
+
+<h2>Información</h2>
+
+<p>
+Nombre: {{ datos.nombre }}
+</p>
+
+<p>
+Versión: {{ datos.version }}
+</p>
+
+<p>
+Activo: {{ datos.tiempo }}
+</p>
+
+</div>
+
+
+
+<button>
+Settings
+</button>
+
+
+</div>
+
+
+</body>
+
+</html>
