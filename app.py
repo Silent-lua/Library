@@ -1,71 +1,37 @@
-<!DOCTYPE html>
-<html lang="es">
+from flask import Flask, render_template
+import os
+from datetime import datetime
 
-<head>
+app = Flask(__name__)
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>SilentHub Dashboard</title>
-
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
-</head>
+inicio_servidor = datetime.now()
 
 
-<body>
+@app.route("/")
+def inicio():
+    return render_template("index.html")
 
 
-<div class="container">
+@app.route("/panel")
+def panel():
+
+    tiempo = datetime.now() - inicio_servidor
+
+    datos = {
+        "nombre": "SilentHub",
+        "version": "1.0",
+        "estado": "Online",
+        "tiempo": str(tiempo).split(".")[0]
+    }
+
+    return render_template(
+        "panel.html",
+        datos=datos
+    )
 
 
-<h1>SilentHub</h1>
-
-<p>
-Dashboard
-</p>
-
-
-<div class="card">
-
-<h2>Estado</h2>
-
-<p class="online">
-● {{ datos.estado }}
-</p>
-
-</div>
-
-
-
-<div class="card">
-
-<h2>Información</h2>
-
-<p>
-Nombre: {{ datos.nombre }}
-</p>
-
-<p>
-Versión: {{ datos.version }}
-</p>
-
-<p>
-Activo: {{ datos.tiempo }}
-</p>
-
-</div>
-
-
-
-<button>
-Settings
-</button>
-
-
-</div>
-
-
-</body>
-
-</html>
+if __name__ == "__main__":
+    app.run(
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 5000))
+    )
