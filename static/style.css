@@ -1,132 +1,286 @@
-body {
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
 
-    margin: 0;
+html,
+body{
 
-    min-height: 100vh;
+    width:100%;
+    height:100%;
 
-    background: #080808;
+    overflow:hidden;
 
-    color: white;
+    font-family:
+    "Segoe UI",
+    Arial,
+    sans-serif;
 
-    font-family: Arial, sans-serif;
-
-    display: flex;
-
-    justify-content: center;
-
-    align-items: center;
+    background:#030303;
 
 }
 
+/* ==========================
+   MATRIX
+========================== */
 
-.container {
+#matrix{
 
-    width: 90%;
+    position:fixed;
 
-    max-width: 450px;
+    top:0;
+    left:0;
 
-    text-align: center;
+    width:100%;
+    height:100%;
 
-    background: #111;
-
-    padding: 40px 30px;
-
-    border-radius: 20px;
-
-    box-shadow: 0 0 30px rgba(255,255,255,0.08);
-
-}
-
-
-h1 {
-
-    font-size: 48px;
-
-    margin-bottom: 15px;
+    z-index:1;
 
 }
 
+/* ==========================
+   GREEN GLOW
+========================== */
 
-p {
+.background-glow{
 
-    color: #aaa;
+    position:fixed;
 
-    font-size: 18px;
+    width:100%;
+    height:100%;
 
-    margin-bottom: 25px;
+    background:
+    radial-gradient(circle,
+    rgba(0,255,120,.08),
+    transparent 70%);
 
-}
-
-
-.card {
-
-    background: #1a1a1a;
-
-    padding: 20px;
-
-    margin-bottom: 15px;
-
-    border-radius: 15px;
-
-    text-align: left;
+    z-index:2;
 
 }
 
+/* ==========================
+   LOGIN
+========================== */
 
-.card h2 {
+.login-box{
 
-    margin: 0 0 10px;
+    position:absolute;
 
-    font-size: 20px;
+    top:50%;
+    left:50%;
 
-}
+    transform:
+    translate(-50%,-50%);
 
+    z-index:5;
 
-.online {
+    width:420px;
+    max-width:90%;
 
-    color: #00ff88;
+    padding:45px;
 
-    font-weight: bold;
+    border-radius:22px;
 
-}
+    background:
+    rgba(12,12,12,.55);
 
+    backdrop-filter:blur(18px);
 
-button {
+    border:
+    1px solid
+    rgba(0,255,120,.15);
 
-    width: 100%;
+    box-shadow:
 
-    height: 60px;
+    0 0 40px rgba(0,255,120,.08),
 
-    font-size: 20px;
+    inset 0 0 15px rgba(255,255,255,.03);
 
-    font-weight: bold;
+    text-align:center;
 
-    background: white;
-
-    color: black;
-
-    border: none;
-
-    border-radius: 15px;
-
-    cursor: pointer;
-
-    transition: 0.3s;
-
-}
-
-
-button:hover {
-
-    transform: scale(1.05);
-
-    background: #ddd;
+    animation:
+    fadeIn .8s ease;
 
 }
 
+/* ==========================
+   LOGO
+========================== */
 
-a {
+.logo h1{
 
-    text-decoration: none;
+    color:#ffffff;
+
+    font-size:52px;
+
+    font-weight:800;
+
+    letter-spacing:2px;
+
+    margin-bottom:12px;
+
+}
+
+.logo span{
+
+    color:#7effa6;
+
+    font-size:17px;
+
+    letter-spacing:3px;
+
+    text-transform:uppercase;
+
+}
+
+/* ==========================
+   BUTTON
+========================== */
+
+.access-btn{
+
+    margin-top:40px;
+
+    width:100%;
+
+    height:60px;
+
+    border:none;
+
+    border-radius:15px;
+
+    cursor:pointer;
+
+    font-size:18px;
+
+    font-weight:700;
+
+    letter-spacing:4px;
+
+    color:#000;
+
+    background:
+
+    linear-gradient(
+    90deg,
+    #00ff88,
+    #52ff52);
+
+    transition:.35s;
+
+}
+
+.access-btn:hover{
+
+    transform:
+    translateY(-3px);
+
+    box-shadow:
+
+    0 0 25px #00ff88;
+
+}
+
+/* ==========================
+   ANIMATION
+========================== */
+
+@keyframes fadeIn{
+
+    from{
+
+        opacity:0;
+
+        transform:
+        translate(-50%,-40%);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:
+        translate(-50%,-50%);
+
+    }
+
+}
+
+/* ==========================
+   PANEL
+========================== */
+
+.container{
+
+    width:90%;
+
+    max-width:900px;
+
+    margin:auto;
+
+    margin-top:60px;
+
+    padding:35px;
+
+    background:#111;
+
+    border-radius:20px;
+
+    color:white;
+
+}
+
+.card{
+
+    margin-top:20px;
+
+    background:#181818;
+
+    padding:20px;
+
+    border-radius:15px;
+
+}
+
+.online{
+
+    color:#00ff88;
+
+    font-weight:bold;
+
+}
+
+button{
+
+    margin-top:25px;
+
+    width:100%;
+
+    height:55px;
+
+    border:none;
+
+    border-radius:12px;
+
+    cursor:pointer;
+
+    font-size:17px;
+
+    font-weight:bold;
+
+    background:#00ff88;
+
+    color:black;
+
+    transition:.3s;
+
+}
+
+button:hover{
+
+    box-shadow:
+    0 0 20px #00ff88;
 
 }
