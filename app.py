@@ -26,7 +26,7 @@ app.secret_key = os.environ.get(
 
 app.config["REMEMBER_COOKIE_DURATION"] = timedelta(days=30)
 app.config["REMEMBER_COOKIE_HTTPONLY"] = True
-app.config["REMEMBER_COOKIE_SECURE"] = True
+app.config["REMEMBER_COOKIE_SECURE"] = False
 
 
 inicio_servidor = datetime.now()
