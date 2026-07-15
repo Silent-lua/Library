@@ -7,131 +7,67 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>SilentHub Dashboard</title>
+<title>SilentHub Panel</title>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
 </head>
 
-
 <body class="dashboard-body">
 
-
 <div class="dashboard-layout">
-
-
 
     <!-- SIDEBAR -->
 
     <aside class="sidebar">
 
-
         <div class="sidebar-logo">
 
-            <h1>
-                SilentHub
-            </h1>
+            <h1>SilentHub</h1>
 
-            <span>
-                CONTROL PANEL
-            </span>
+            <span>PRIVATE PANEL</span>
 
         </div>
-
-
 
         <nav class="menu">
 
+            <a href="#" class="active">🏠 Overview</a>
 
-            <a href="#" class="active">
+            <a href="#">📜 Scripts</a>
 
-                🏠 Overview
+            <a href="#">🔑 Licenses</a>
 
-            </a>
+            <a href="#">📊 Logs</a>
 
-
-            <a href="#">
-
-                📜 Scripts
-
-            </a>
-
-
-            <a href="#">
-
-                🔑 Licenses
-
-            </a>
-
-
-            <a href="#">
-
-                📊 Logs
-
-            </a>
-
-
-            <a href="#">
-
-                ⚙ Settings
-
-            </a>
-
+            <a href="#">⚙ Settings</a>
 
         </nav>
 
-
-
         <div class="user-box">
 
+            <p>Logged as</p>
 
-            <p>
-                Logged as
-            </p>
-
-
-            <strong>
-
-                {{ datos.usuario }}
-
-            </strong>
-
+            <strong>{{ datos.usuario }}</strong>
 
         </div>
-
-
 
     </aside>
 
 
 
-
-
-    <!-- MAIN -->
+    <!-- CONTENIDO -->
 
     <main class="dashboard-main">
 
-
-
         <header class="topbar">
-
 
             <div>
 
+                <h2>SilentHub Dashboard</h2>
 
-                <h2>
-                    Dashboard
-                </h2>
-
-
-                <p>
-                    Welcome back to SilentHub
-                </p>
-
+                <p>Private Control Panel</p>
 
             </div>
-
-
 
             <a href="/logout" class="logout-btn">
 
@@ -139,28 +75,17 @@
 
             </a>
 
-
-
         </header>
 
 
 
-
-
-        <!-- STATS -->
-
+        <!-- ESTADÍSTICAS -->
 
         <section class="stats">
 
-
-
             <div class="stat-card">
 
-
-                <span>
-                    Server
-                </span>
-
+                <span>Server</span>
 
                 <h3 class="online">
 
@@ -168,188 +93,83 @@
 
                 </h3>
 
-
             </div>
-
-
-
-
 
             <div class="stat-card">
 
+                <span>Version</span>
 
-                <span>
-                    Version
-                </span>
-
-
-                <h3>
-
-                    {{ datos.version }}
-
-                </h3>
-
+                <h3>{{ datos.version }}</h3>
 
             </div>
-
-
-
-
 
             <div class="stat-card">
 
+                <span>Uptime</span>
 
-                <span>
-                    Uptime
-                </span>
-
-
-                <h3>
-
-                    {{ datos.tiempo }}
-
-                </h3>
-
+                <h3>{{ datos.tiempo }}</h3>
 
             </div>
-
-
 
         </section>
 
 
 
-
-
-        <!-- CONTENT -->
-
+        <!-- MÓDULOS -->
 
         <section class="content-panel">
 
-
-
-            <h2>
-
-                System Modules
-
-            </h2>
-
-
+            <h2>Modules</h2>
 
             <div class="modules-grid">
 
-
-
                 <div class="module-box">
 
+                    <div class="icon">📜</div>
 
-                    <div class="icon">
-                        📜
-                    </div>
+                    <h3>Scripts</h3>
 
-
-                    <h3>
-                        Scripts
-                    </h3>
-
-
-                    <p>
-                        Manage your scripts vault.
-                    </p>
-
+                    <p>Manage all Lua scripts.</p>
 
                 </div>
 
-
-
-
-
                 <div class="module-box">
 
+                    <div class="icon">🔑</div>
 
-                    <div class="icon">
-                        🔑
-                    </div>
+                    <h3>Licenses</h3>
 
-
-                    <h3>
-                        Licenses
-                    </h3>
-
-
-                    <p>
-                        Create and manage keys.
-                    </p>
-
+                    <p>Create and manage keys.</p>
 
                 </div>
 
-
-
-
-
                 <div class="module-box">
 
+                    <div class="icon">📊</div>
 
-                    <div class="icon">
-                        📊
-                    </div>
+                    <h3>Logs</h3>
 
-
-                    <h3>
-                        Security Logs
-                    </h3>
-
-
-                    <p>
-                        Monitor system activity.
-                    </p>
-
+                    <p>View security events.</p>
 
                 </div>
 
-
-
-
-
                 <div class="module-box">
 
+                    <div class="icon">⚙</div>
 
-                    <div class="icon">
-                        ⚙️
-                    </div>
+                    <h3>Settings</h3>
 
-
-                    <h3>
-                        Configuration
-                    </h3>
-
-
-                    <p>
-                        Manage SilentHub settings.
-                    </p>
-
+                    <p>Configure SilentHub.</p>
 
                 </div>
-
-
 
             </div>
 
-
-
         </section>
-
-
-
 
     </main>
 
-
-
 </div>
-
-
 
 </body>
 
