@@ -1,404 +1,358 @@
 <!DOCTYPE html>
-<html lang="es">
-
+<html lang="en">
 <head>
-
-<meta charset="UTF-8">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>SilentHub Access</title>
-
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SilentHub</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-
-
 <body>
-
-
-
-<canvas id="matrix"></canvas>
-
-
-<div class="background-glow"></div>
-
-
-
-
-
-<div class="login-box">
-
-
-
-    <div class="logo">
-
-
-        <h1>
-            SilentHub
-        </h1>
-
-
-        <p>
-            Личная панель управления
-        </p>
-
-
+    <div class="sidebar">
+        <div class="sidebar-item active" data-target="overview">Overview</div>
+        <div class="sidebar-item" data-target="scripts">Scripts</div>
+        <div class="sidebar-item" data-target="licenses">Licenses</div>
+        <div class="sidebar-item" data-target="files">Files</div>
+        <div class="sidebar-item" data-target="analytics">Analytics</div>
+        <div class="sidebar-item" data-target="settings">Settings</div>
     </div>
 
+    <div class="main-content">
+        <div class="panel-container">
+            
+            <!-- SECCIÓN: OVERVIEW -->
+            <section id="overview-view" class="dashboard-view active-view">
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <span class="metric-title">Estado de Red</span>
+                        <div class="metric-value-container">
+                            <span class="status-indicator active-status"></span>
+                            <span class="metric-value">Secure Relay</span>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-title">Entorno</span>
+                        <span class="metric-value">Producción</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-title">Tiempo de Actividad</span>
+                        <span id="uptime-display" class="metric-value">{{ datos.tiempo if datos else '0d 0h 7m' }}</span>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-title">Identidad Admin</span>
+                        <span class="metric-value">admin</span>
+                    </div>
+                </div>
 
+                <div class="live-stream-box">
+                    <h3>Script Execution Stream <span class="live-badge">Live Monitoring</span></h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>TARGET USER</th>
+                                    <th>UNIVERSE ID</th>
+                                    <th>ORIGIN IP</th>
+                                    <th>TIMESTAMP</th>
+                                </tr>
+                            </thead>
+                            <tbody id="stream-tbody">
+                                {% if ejecuciones %}
+                                    {% for exe in ejecuciones %}
+                                    <tr>
+                                        <td>{{ exe.roblox_username }}</td>
+                                        <td>{{ exe.universe_id }}</td>
+                                        <td>{{ exe.ip_address }}</td>
+                                        <td>{{ exe.timestamp }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr class="empty-row">
+                                        <td colspan="4">Awaiting incoming connections...</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
+                <div class="live-stream-box">
+                    <h3>Authentication Audit <span class="system-badge">System Access</span></h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ATTEMPTED LOGIN</th>
+                                    <th>CLIENT IP</th>
+                                    <th>AUTHORIZATION</th>
+                                    <th>TIMESTAMP</th>
+                                </tr>
+                            </thead>
+                            <tbody id="audit-tbody">
+                                {% if auditorias %}
+                                    {% for audit in auditorias %}
+                                    <tr>
+                                        <td>{{ audit.username }}</td>
+                                        <td>{{ audit.ip }}</td>
+                                        <td style="color: {% if audit.status == 'SUCCESS' %}#10b981{% else %}#ef4444{% endif %}; font-weight: bold;">
+                                            {{ audit.status }}
+                                        </td>
+                                        <td>{{ audit.timestamp }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr class="empty-row">
+                                        <td colspan="4">No access logs recorded.</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
 
+            <!-- SECCIÓN: SCRIPTS MANAGER -->
+            <section id="scripts-view" class="dashboard-view">
+                <div class="section-header">
+                    <div>
+                        <h2>Scripts Manager</h2>
+                        <p>Sube, edita y gestiona todos tus scripts de Lua en tiempo real.</p>
+                    </div>
+                    <button class="primary-btn" onclick="openScriptModal()">Nuevo Script</button>
+                </div>
+                <div class="scripts-grid" id="scripts-list">
+                    {% if scripts %}
+                        {% for script in scripts %}
+                        <div class="script-card">
+                            <div class="script-details">
+                                <h4>{{ script.name }}</h4>
+                                <span class="script-universe">Universe: {{ script.universe_id }}</span>
+                            </div>
+                            <div class="script-actions">
+                                <label class="switch-control">
+                                    <input type="checkbox" {% if script.active %}checked{% endif %} onchange="toggleScript({{ script.id }})">
+                                    <span class="slider-control"></span>
+                                </label>
+                                <button class="revoke-btn" onclick="deleteScript({{ script.id }})">Eliminar</button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p style="color: #9ca3af; grid-column: 1 / -1;">No hay scripts almacenados en la base de datos.</p>
+                    {% endif %}
+                </div>
+            </section>
 
+            <!-- SECCIÓN: LICENSES -->
+            <section id="licenses-view" class="dashboard-view">
+                <div class="section-header">
+                    <div>
+                        <h2>Generador de Licencias</h2>
+                        <p>Crea, revoca y monitorea las llaves de acceso del sistema.</p>
+                    </div>
+                </div>
+                <div class="generator-panel">
+                    <div class="input-group">
+                        <label>Prefijo</label>
+                        <input type="text" id="license-prefix" placeholder="SH_">
+                    </div>
+                    <div class="input-group">
+                        <label>Duración</label>
+                        <select id="license-duration">
+                            <option value="1">24 Horas</option>
+                            <option value="7">7 Días</option>
+                            <option value="30">30 Días</option>
+                            <option value="999">De por Vida</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Límite de Usos</label>
+                        <input type="number" id="license-uses" value="1" min="1">
+                    </div>
+                    <button class="action-btn" onclick="generateLicenseKey()">Generar Licencia</button>
+                </div>
+                <div class="table-container margin-top">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>LICENCIA</th>
+                                <th>DURACIÓN</th>
+                                <th>USOS MÁXIMOS</th>
+                                <th>ESTADO</th>
+                                <th>ACCIONES</th>
+                            </tr>
+                        </thead>
+                        <tbody id="licenses-tbody">
+                            {% if licencias %}
+                                {% for lic in licencias %}
+                                <tr>
+                                    <td><code>{{ lic.key }}</code></td>
+                                    <td>
+                                        {% if lic.duration == 999 %}De por Vida
+                                        {% elif lic.duration == 1 %}24 Horas
+                                        {% else %}{{ lic.duration }} Días{% endif %}
+                                    </td>
+                                    <td>{{ lic.max_uses }}</td>
+                                    <td>
+                                        <span class="status-badge {% if lic.status == 'Active' or lic.status == 'active' %}active{% else %}revoked{% endif %}">
+                                            {{ lic.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if lic.status == 'Active' or lic.status == 'active' %}
+                                        <button class="revoke-btn" onclick="revokeLicense({{ lic.id }})">Revocar</button>
+                                        {% else %}
+                                        -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr class="empty-row">
+                                    <td colspan="5">No hay licencias emitidas.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
 
-    {% with messages = get_flashed_messages() %}
+            <!-- SECCIÓN: FILES MANAGER -->
+            <section id="files-view" class="dashboard-view">
+                <div class="section-header">
+                    <div>
+                        <h2>Gestor de Archivos</h2>
+                        <p>Organiza, examina y recupera recursos almacenados en el servidor.</p>
+                    </div>
+                </div>
+                <div class="drag-drop-zone" id="drop-zone">
+                    <svg class="upload-icon" viewBox="0 0 24 24" width="48" height="48">
+                        <path fill="currentColor" d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+                    </svg>
+                    <p>Arrastra archivos aquí o haz clic para subirlos</p>
+                    <input type="file" id="file-uploader" class="hidden-uploader" multiple>
+                </div>
+                <div class="files-grid" id="files-list">
+                    {% if archivos %}
+                        {% for file in archivos %}
+                        <div class="file-card">
+                            <div class="file-info">
+                                <svg viewBox="0 0 24 24" width="24" height="24" fill="#10b981">
+                                    <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                                </svg>
+                                <div class="file-details">
+                                    <div class="file-name" title="{{ file.name }}">{{ file.name }}</div>
+                                    <div class="file-size">{{ file.size }} KB</div>
+                                </div>
+                            </div>
+                            <div class="file-card-actions">
+                                <button class="file-btn" onclick="copyLink('{{ file.name }}')">Copiar Link</button>
+                                <button class="file-btn delete" onclick="deleteFile({{ file.id }})">Eliminar</button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </section>
 
-        {% if messages %}
+            <!-- SECCIÓN: ANALYTICS -->
+            <section id="analytics-view" class="dashboard-view">
+                <div class="section-header">
+                    <div>
+                        <h2>Análisis de Consumo</h2>
+                        <p>Visualización en vivo de cargas de tráfico y consultas del servidor.</p>
+                    </div>
+                </div>
+                <div class="charts-container">
+                    <div class="chart-card">
+                        <h3>Tráfico Reciente (Peticiones)</h3>
+                        <div class="mock-chart-wrapper">
+                            <svg viewBox="0 0 500 200" class="svg-chart">
+                                <defs>
+                                    <linearGradient id="chart-glow" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="#10b981" stop-opacity="0.4"/>
+                                        <stop offset="100%" stop-color="#10b981" stop-opacity="0.0"/>
+                                    </linearGradient>
+                                </defs>
+                                <path d="M 0 150 Q 100 80, 200 120 T 400 40 T 500 90 L 500 200 L 0 200 Z" fill="url(#chart-glow)"/>
+                                <path d="M 0 150 Q 100 80, 200 120 T 400 40 T 500 90" fill="none" stroke="#10b981" stroke-width="3"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-        <div class="error">
-
-            {{ messages[0] }}
-
+            <!-- SECCIÓN: SETTINGS -->
+            <section id="settings-view" class="dashboard-view">
+                <div class="section-header">
+                    <div>
+                        <h2>Configuraciones Globales</h2>
+                        <p>Establece parámetros operativos y de seguridad del ecosistema.</p>
+                    </div>
+                </div>
+                <div class="settings-form">
+                    <div class="settings-card">
+                        <h3>Discord Integrations</h3>
+                        <div class="input-group">
+                            <label>Webhook URL (Logs de Ejecución)</label>
+                            <input type="password" id="webhook-execution" class="settings-input" placeholder="https://discord.com/api/webhooks/..." value="{{ configuracion.webhook_execution if configuracion else '' }}">
+                        </div>
+                        <div class="input-group">
+                            <label>Webhook URL (Auditorías de Inicio de Sesión)</label>
+                            <input type="password" id="webhook-audit" class="settings-input" placeholder="https://discord.com/api/webhooks/..." value="{{ configuracion.webhook_audit if configuracion else '' }}">
+                        </div>
+                        <button class="primary-btn" style="margin-top: 15px; width: fit-content;" onclick="saveWebhooks()">Guardar Webhooks</button>
+                    </div>
+                    <div class="settings-card">
+                        <h3>Variables de Protección</h3>
+                        <div class="toggle-row">
+                            <div>
+                                <h4>Restringir IPs sospechosas</h4>
+                                <p>Aplica un bloqueo preventivo a orígenes con peticiones inválidas consecutivas.</p>
+                            </div>
+                            <label class="switch-control">
+                                <input type="checkbox" id="restrict-ips" {% if configuracion and configuracion.restrict_ips %}checked{% endif %} onchange="toggleProtectionSetting('restrict_ips')">
+                                <span class="slider-control"></span>
+                            </label>
+                        </div>
+                        <div class="toggle-row">
+                            <div>
+                                <h4>Modo de Mantenimiento</h4>
+                                <p>Retorna códigos de estado de offline y bloquea ejecuciones de clientes.</p>
+                            </div>
+                            <label class="switch-control">
+                                <input type="checkbox" id="maintenance-mode" {% if configuracion and configuracion.maintenance_mode %}checked{% endif %} onchange="toggleProtectionSetting('maintenance_mode')">
+                                <span class="slider-control"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </div>
-
-        {% endif %}
-
-    {% endwith %}
-
-
-
-
-
-
-
-
-    <form method="POST" action="/login">
-
-
-
-        <input
-
-        type="text"
-
-        name="username"
-
-        placeholder="Username"
-
-        autocomplete="username"
-
-        required>
-
-
-
-
-
-
-
-        <input
-
-        type="password"
-
-        name="password"
-
-        placeholder="Password"
-
-        autocomplete="current-password"
-
-        required>
-
-
-
-
-
-
-
-
-        <button
-
-        class="access-btn"
-
-        type="submit">
-
-
-            ACCESS
-
-
-        </button>
-
-
-
-
-
-    </form>
-
-
-
-
-
-
-
-    <div class="footer-text">
-
-
-        Защищенный шлюз SilentHub
-
-
     </div>
 
-
-
-
-
-</div>
-
-
-
-
-
-
-
-
-
-<script>
-
-
-const canvas =
-document.getElementById("matrix");
-
-
-const ctx =
-canvas.getContext("2d");
-
-
-
-function resize(){
-
-
-    canvas.width =
-    window.innerWidth;
-
-
-    canvas.height =
-    window.innerHeight;
-
-
-}
-
-
-
-resize();
-
-
-
-window.addEventListener(
-"resize",
-resize
-);
-
-
-
-
-
-
-const characters =
-"01ABCDEFGHIJKLMNOPQRSTUVWXYZ#$%&@";
-
-
-
-const fontSize = 16;
-
-
-
-let columns =
-Math.floor(
-canvas.width / fontSize
-);
-
-
-
-let drops = [];
-
-
-
-
-
-function setup(){
-
-
-    columns =
-    Math.floor(
-    canvas.width / fontSize
-    );
-
-
-
-    drops = [];
-
-
-
-    for(
-        let i = 0;
-        i < columns;
-        i++
-    ){
-
-        drops[i] = 1;
-
-    }
-
-
-}
-
-
-
-setup();
-
-
-
-
-
-
-
-function draw(){
-
-
-
-    ctx.fillStyle =
-    "rgba(0,0,0,0.08)";
-
-
-
-    ctx.fillRect(
-
-        0,
-
-        0,
-
-        canvas.width,
-
-        canvas.height
-
-    );
-
-
-
-
-
-    ctx.fillStyle =
-    "#00ff88";
-
-
-
-    ctx.font =
-    fontSize + "px monospace";
-
-
-
-
-
-
-    for(
-        let i = 0;
-        i < drops.length;
-        i++
-    ){
-
-
-
-        const text =
-
-        characters[
-
-            Math.floor(
-
-                Math.random()
-
-                *
-
-                characters.length
-
-            )
-
-        ];
-
-
-
-
-
-        ctx.fillText(
-
-            text,
-
-            i * fontSize,
-
-            drops[i] * fontSize
-
-        );
-
-
-
-
-
-
-
-        if(
-
-            drops[i] * fontSize >
-
-            canvas.height
-
-            &&
-
-            Math.random() >
-
-            0.975
-
-        ){
-
-
-            drops[i] = 0;
-
-
-        }
-
-
-
-
-
-
-        drops[i]++;
-
-
-
-    }
-
-
-
-
-
-}
-
-
-
-
-
-
-setInterval(
-
-draw,
-
-40
-
-);
-
-
-
-</script>
-
-
-
-
-
+    <!-- MODAL PARA NUEVO SCRIPT -->
+    <div class="modal" id="script-modal">
+        <div class="modal-content">
+            <h3>Configurar Nuevo Script</h3>
+            <div class="input-group">
+                <label>Nombre del Script</label>
+                <input type="text" id="modal-script-name" placeholder="Aimbot, ESP, AutoFarm...">
+            </div>
+            <div class="input-group">
+                <label>Universe ID Asociado</label>
+                <input type="text" id="modal-script-universe" placeholder="ID numérico de la experiencia">
+            </div>
+            <div class="input-group">
+                <label>Código Fuente (Lua)</label>
+                <textarea id="modal-script-code" class="code-editor" placeholder="-- Escribe tu código de Lua aquí"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="secondary-btn" onclick="closeScriptModal()">Cancelar</button>
+                <button class="primary-btn" onclick="saveScript()">Guardar Script</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
-
 </html>
