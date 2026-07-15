@@ -7,6 +7,7 @@ from flask_login import (
     login_required,
     current_user
 )
+from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 import os
 import hashlib
@@ -24,12 +25,41 @@ app.secret_key = os.environ.get(
     "silenthub-change-this-secret"
 )
 
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///silenthub.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
 app.config["REMEMBER_COOKIE_DURATION"] = timedelta(days=30)
 app.config["REMEMBER_COOKIE_HTTPONLY"] = True
 app.config["REMEMBER_COOKIE_SECURE"] = False
 
 
 inicio_servidor = datetime.now()
+db = SQLAlchemy(app)
+
+
+# ==================================================
+# MODELOS DE BASE DE DATOS
+# ==================================================
+
+class Usuario(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
+
+class RegistroSeguridad(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    ip_address = db.Column(db.String(50))
+    user_agent = db.Column(db.String(255))
+    attempted_username = db.Column(db.String(50))
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    status = db.Column(db.String(20))
+
+class EjecucionScript(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    roblox_username = db.Column(db.String(50))
+    universe_id = db.Column(db.String(15))
+    ip_address = db.Column(db.String(50))
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 # ==================================================
@@ -37,232 +67,125 @@ inicio_servidor = datetime.now()
 # ==================================================
 
 login_manager = LoginManager()
-
-login_manager.login_view = "login"
-
 login_manager.init_app(app)
-
-
-
-# ==================================================
-# USUARIO ADMIN
-# ==================================================
-
-# En producción estos valores irán a variables
-# de entorno de Render.
-
-ADMIN_USER = os.environ.get(
-    "ADMIN_USER",
-    "Silent"
-)
-
-
-ADMIN_PASSWORD = os.environ.get(
-    "ADMIN_PASSWORD",
-    "0024600"
-)
-
-
-
-class User(UserMixin):
-
-    def __init__(self, username):
-
-        self.id = username
-
-
+login_manager.login_view = "login"
 
 @login_manager.user_loader
 def load_user(user_id):
+    return Usuario.query.get(int(user_id))
 
-    return User(user_id)
+def inicializar_sistema():
+    # Crea un usuario administrador por defecto si la tabla está vacía
+    if not Usuario.query.filter_by(username="admin").first():
+        hash_pass = hashlib.sha256("admin123".encode()).hexdigest()
+        admin = Usuario(username="admin", password_hash=hash_pass)
+        db.session.add(admin)
+        db.session.commit()
 
+with app.app_context():
+    db.create_all()
+    inicializar_sistema()
 
 
 # ==================================================
-# RUTAS
+# RUTAS DE INTERFAZ (UI)
 # ==================================================
 
+@app.route('/', methods=['GET'])
+def index():
+    return redirect(url_for('login'))
 
-@app.route("/")
-def inicio():
-
-    if current_user.is_authenticated:
-
-        return redirect(
-            url_for("panel")
-        )
-
-
-    return redirect(
-        url_for("login")
-    )
-
-
-
-# --------------------------
-# LOGIN
-# --------------------------
-
-@app.route("/login", methods=["GET", "POST"])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-
-
     if current_user.is_authenticated:
+        return redirect(url_for('panel'))
 
-        return redirect(
-            url_for("panel")
-        )
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        ip_address = request.remote_addr
+        user_agent = request.user_agent.string
+        
+        user = Usuario.query.filter_by(username=username).first()
+        pass_hash = hashlib.sha256(password.encode()).hexdigest() if password else ""
 
-
-    if request.method == "POST":
-
-
-        username = request.form.get(
-            "username"
-        )
-
-
-        password = request.form.get(
-            "password"
-        )
-
-
-        if (
-            username == ADMIN_USER
-            and password == ADMIN_PASSWORD
-        ):
-
-
-            user = User(username)
-
-
-            login_user(
-                user,
-                remember=True
+        if user and user.password_hash == pass_hash:
+            login_user(user, remember=True)
+            
+            log = RegistroSeguridad(
+                ip_address=ip_address, 
+                user_agent=user_agent, 
+                attempted_username=username, 
+                status="SUCCESS"
             )
-
-
-            return redirect(
-                url_for("panel")
-            )
-
-
+            db.session.add(log)
+            db.session.commit()
+            
+            return redirect(url_for('panel'))
         else:
-
-
-            flash(
-                "🐀 Rata, Tu IP fue extraída"
+            log = RegistroSeguridad(
+                ip_address=ip_address, 
+                user_agent=user_agent, 
+                attempted_username=username, 
+                status="FAILED"
             )
+            db.session.add(log)
+            db.session.commit()
+            
+            flash("ACCESO DENEGADO")
 
+    return render_template('login.html')
 
-
-    return render_template(
-        "login.html"
-    )
-
-
-
-# --------------------------
-# LOGOUT
-# --------------------------
-
-@app.route("/logout")
+@app.route('/logout')
 @login_required
 def logout():
-
     logout_user()
+    return redirect(url_for('login'))
 
-
-    return redirect(
-        url_for("login")
-    )
-
-
-
-# --------------------------
-# PANEL
-# --------------------------
-
-@app.route("/panel")
+@app.route('/panel')
 @login_required
 def panel():
+    # Cálculo dinámico del Uptime para renderizar en tu HTML
+    tiempo_activo = datetime.now() - inicio_servidor
+    horas, rem = divmod(tiempo_activo.seconds, 3600)
+    minutos, _ = divmod(rem, 60)
+    uptime_str = f"{tiempo_activo.days}d {horas}h {minutos}m"
 
-
-    tiempo = (
-        datetime.now()
-        -
-        inicio_servidor
-    )
-
-
-    datos = {
-
-
-        "nombre":
-        "SilentHub",
-
-
-        "version":
-        "2.0",
-
-
-        "estado":
-        "Online",
-
-
-        "tiempo":
-        str(tiempo).split(".")[0],
-
-
-        "usuario":
-        current_user.id
-
+    # Diccionario exacto que espera tu panel.html
+    datos_servidor = {
+        "estado": "En línea",
+        "version": "SilentHub",
+        "tiempo": uptime_str,
+        "usuario": current_user.username
     }
-
-
-
-    return render_template(
-        "panel.html",
-        datos=datos
-    )
-
+    
+    return render_template('panel.html', datos=datos_servidor)
 
 
 # ==================================================
-# SECURITY HEADERS
+# API DE TELEMETRÍA (CONEXIÓN LUA)
 # ==================================================
 
-@app.after_request
-def security_headers(response):
-
-
-    response.headers["X-Frame-Options"] = "DENY"
-
-    response.headers["X-Content-Type-Options"] = "nosniff"
-
-    response.headers["Referrer-Policy"] = "strict-origin"
-
-    return response
-
-
-
-# ==================================================
-# START SERVER
-# ==================================================
-
-if __name__ == "__main__":
-
-
-    app.run(
-
-        host="0.0.0.0",
-
-        port=int(
-            os.environ.get(
-                "PORT",
-                5000
-            )
+@app.route('/api/load', methods=['GET'])
+def load_script():
+    uid = request.args.get('uid')
+    user = request.args.get('user')
+    ip_address = request.remote_addr
+    
+    if uid and user:
+        nueva_ejecucion = EjecucionScript(
+            roblox_username=user,
+            universe_id=uid,
+            ip_address=ip_address
         )
+        db.session.add(nueva_ejecucion)
+        db.session.commit()
+        
+    codigo_respuesta = 'print("SilentHub Conectado. Ejecutando...")'
+    
+    return codigo_respuesta, 200, {'Content-Type': 'text/plain'}
 
-    )
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5000)
