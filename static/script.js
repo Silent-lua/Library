@@ -1,10 +1,13 @@
 document.addEventListener("DOMContentLoaded", () => {
     initNavigation();
-    loadDashboardData();
+    initDragAndDrop();
 });
 
+// ----------------------------------------------------
+// NAVEGACIÓN ENTRE SECCIONES
+// ----------------------------------------------------
 function initNavigation() {
-    const sidebarItems = document.querySelectorAll(".sidebar-item");
+    const sidebarItems = document.querySelectorAll(".sidebar-item, .nav-btn");
     const views = document.querySelectorAll(".dashboard-view");
 
     sidebarItems.forEach(item => {
@@ -25,69 +28,37 @@ function initNavigation() {
     });
 }
 
-async function loadDashboardData() {
-    await fetchScripts();
-    await fetchLicenses();
-}
-
-async function fetchScripts() {
+// ----------------------------------------------------
+// PERSISTENCIA Y OPERACIONES DE LUA SCRIPTS
+// ----------------------------------------------------
+async function toggleScript(id) {
     try {
-        const response = await fetch('/api/scripts');
-        const scripts = await response.json();
-        renderScripts(scripts);
-    } catch (error) {
-        console.error(error);
-    }
-}
-
-function renderScripts(scripts) {
-    const container = document.getElementById("scripts-list");
-    if (!container) return;
-
-    container.innerHTML = "";
-    scripts.forEach(script => {
-        const card = document.createElement("div");
-        card.className = "script-card";
-        const isChecked = script.active === 1 ? "checked" : "";
-        card.innerHTML = `
-            <div class="script-details">
-                <h4>${script.name}</h4>
-                <span class="script-universe">${script.universe_id}</span>
-            </div>
-            <div class="script-actions">
-                <label class="switch-control">
-                    <input type="checkbox" ${isChecked} onchange="toggleScript(${script.id}, this.checked)">
-                    <span class="slider-control"></span>
-                </label>
-                <button class="revoke-btn" onclick="deleteScript(${script.id})">Purge</button>
-            </div>
-        `;
-        container.appendChild(card);
-    });
-}
-
-async function toggleScript(id, isActive) {
-    try {
-        await fetch(`/api/scripts/${id}/toggle`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ active: isActive })
+        const response = await fetch(`/api/scripts/toggle/${id}`, { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
         });
-    } catch (error) {
-        console.error(error);
+        if (!response.ok) throw new Error("Error al cambiar estado del script.");
+    } catch (err) {
+        console.error(err);
+        alert("No se pudo actualizar el estado del script.");
     }
 }
 
 async function deleteScript(id) {
+    if (!confirm("¿Seguro que deseas eliminar este script de forma permanente?")) return;
+    
     try {
-        const response = await fetch(`/api/scripts/${id}`, {
-            method: 'DELETE'
+        const response = await fetch(`/api/scripts/delete/${id}`, { 
+            method: 'DELETE' 
         });
         if (response.ok) {
-            await fetchScripts();
+            location.reload();
+        } else {
+            throw new Error("No se pudo eliminar de la BD.");
         }
-    } catch (error) {
-        console.error(error);
+    } catch (err) {
+        console.error(err);
+        alert("Error al intentar eliminar el script.");
     }
 }
 
@@ -103,92 +74,210 @@ function closeScriptModal() {
 }
 
 async function saveScript() {
-    const name = document.getElementById("modal-script-name").value;
-    const universe = document.getElementById("modal-script-universe").value;
+    const name = document.getElementById("modal-script-name").value.trim();
+    const universe = document.getElementById("modal-script-universe").value.trim();
     const code = document.getElementById("modal-script-code").value;
 
-    if (!name || !universe || !code) return;
+    if (!name || !universe) {
+        alert("Por favor rellena el nombre y el ID de universo.");
+        return;
+    }
 
     try {
-        const response = await fetch('/api/scripts', {
+        const response = await fetch('/api/scripts/create', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: name, universe_id: universe, code: code })
         });
 
         if (response.ok) {
-            await fetchScripts();
             closeScriptModal();
+            location.reload();
+        } else {
+            alert("Error al guardar el script en el servidor.");
         }
-    } catch (error) {
-        console.error(error);
+    } catch (err) {
+        console.error(err);
+        alert("No se pudo conectar con el servidor.");
     }
 }
 
-async function fetchLicenses() {
-    try {
-        const response = await fetch('/api/licenses');
-        const licenses = await response.json();
-        renderLicenses(licenses);
-    } catch (error) {
-        console.error(error);
-    }
-}
-
-function renderLicenses(licenses) {
-    const tbody = document.getElementById("licenses-tbody");
-    if (!tbody) return;
-
-    tbody.innerHTML = "";
-    licenses.forEach(lic => {
-        const row = document.createElement("tr");
-        const statusClass = lic.status === 'Active' ? 'active' : 'revoked';
-        const actionBtn = lic.status === 'Active' 
-            ? `<button class="revoke-btn" onclick="revokeLicense(${lic.id})">Terminate</button>` 
-            : "-";
-
-        row.innerHTML = `
-            <td><code>${lic.key_string}</code></td>
-            <td>${lic.duration}</td>
-            <td>${lic.max_uses}</td>
-            <td><span class="status-badge ${statusClass}">${lic.status}</span></td>
-            <td>${actionBtn}</td>
-        `;
-        tbody.appendChild(row);
-    });
-}
-
+// ----------------------------------------------------
+// SISTEMA DE LICENCIAS (EMISIONES REALES)
+// ----------------------------------------------------
 async function generateLicenseKey() {
-    const prefix = document.getElementById("license-prefix").value || "SH_";
+    const prefix = document.getElementById("license-prefix").value.trim() || "SH_";
     const select = document.getElementById("license-duration");
-    const duration = select.options[select.selectedIndex].value;
+    const duration = select.value;
     const uses = document.getElementById("license-uses").value || 1;
 
+    // Generación segura de clave aleatoria
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let randomPart = "";
+    for (let i = 0; i < 8; i++) {
+        randomPart += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    const key = `${prefix}${randomPart}`;
+
     try {
-        const response = await fetch('/api/licenses', {
+        const response = await fetch('/api/licenses/create', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prefix: prefix, duration: duration, max_uses: parseInt(uses) })
+            body: JSON.stringify({ key: key, duration: parseInt(duration), max_uses: parseInt(uses) })
         });
 
         if (response.ok) {
-            await fetchLicenses();
+            location.reload();
+        } else {
+            alert("Error al guardar la licencia.");
         }
-    } catch (error) {
-        console.error(error);
+    } catch (err) {
+        console.error(err);
     }
 }
 
 async function revokeLicense(id) {
+    if (!confirm("¿Deseas revocar esta llave de acceso?")) return;
+
     try {
-        const response = await fetch(`/api/licenses/${id}/revoke`, {
-            method: 'PUT'
+        const response = await fetch(`/api/licenses/revoke/${id}`, { 
+            method: 'POST' 
         });
-        
         if (response.ok) {
-            await fetchLicenses();
+            location.reload();
         }
-    } catch (error) {
-        console.error(error);
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+// ----------------------------------------------------
+// GESTIÓN DE ARCHIVOS (SUBIDAS DIRECTAS)
+// ----------------------------------------------------
+function initDragAndDrop() {
+    const dropZone = document.getElementById("drop-zone");
+    const fileUploader = document.getElementById("file-uploader");
+
+    if (!dropZone || !fileUploader) return;
+
+    dropZone.addEventListener("click", () => fileUploader.click());
+
+    dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropZone.classList.add("dragover");
+    });
+
+    dropZone.addEventListener("dragleave", () => {
+        dropZone.classList.remove("dragover");
+    });
+
+    dropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropZone.classList.remove("dragover");
+        if (e.dataTransfer.files.length > 0) {
+            handleUploadedFiles(e.dataTransfer.files);
+        }
+    });
+
+    fileUploader.addEventListener("change", () => {
+        if (fileUploader.files.length > 0) {
+            handleUploadedFiles(fileUploader.files);
+        }
+    });
+}
+
+async function handleUploadedFiles(files) {
+    const formData = new FormData();
+    for (let i = 0; i < files.length; i++) {
+        formData.append('files[]', files[i]);
+    }
+
+    try {
+        const response = await fetch('/api/files/upload', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (response.ok) {
+            location.reload();
+        } else {
+            alert("Error al subir los archivos.");
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+function copyLink(filename) {
+    const fullLink = `${window.location.origin}/static/uploads/${filename}`;
+    navigator.clipboard.writeText(fullLink).then(() => {
+        alert("Enlace copiado de forma segura:\n" + fullLink);
+    }).catch(err => {
+        // Fallback en caso de navegadores con restricciones de portapapeles
+        const tempInput = document.createElement("input");
+        tempInput.value = fullLink;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand("copy");
+        document.body.removeChild(tempInput);
+        alert("Enlace copiado de forma segura:\n" + fullLink);
+    });
+}
+
+async function deleteFile(id) {
+    if (!confirm("¿Deseas eliminar permanentemente este archivo físico del servidor?")) return;
+
+    try {
+        const response = await fetch(`/api/files/delete/${id}`, { 
+            method: 'DELETE' 
+        });
+        if (response.ok) {
+            location.reload();
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+// ----------------------------------------------------
+// INTEGRACIONES Y CONFIGURACIONES (SETTINGS)
+// ----------------------------------------------------
+async function saveWebhooks() {
+    const executionUrl = document.getElementById("webhook-execution").value.trim();
+    const auditUrl = document.getElementById("webhook-audit").value.trim();
+
+    try {
+        const response = await fetch('/api/settings/webhooks', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ webhook_execution: executionUrl, webhook_audit: auditUrl })
+        });
+
+        if (response.ok) {
+            alert("Canales de Webhooks actualizados correctamente.");
+        } else {
+            alert("No se pudieron registrar las URLs de Discord.");
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function toggleProtectionSetting(key) {
+    const element = key === 'restrict_ips' ? document.getElementById("restrict-ips") : document.getElementById("maintenance-mode");
+    const active = element.checked;
+
+    try {
+        const response = await fetch('/api/settings/protection', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key: key, active: active })
+        });
+
+        if (!response.ok) throw new Error("Error de guardado.");
+    } catch (err) {
+        console.error(err);
+        element.checked = !active; // Revierte el estado del checkbox si falla
+        alert("Ocurrió un problema guardando el ajuste de protección.");
     }
 }
