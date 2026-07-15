@@ -2,269 +2,198 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>SilentHub Dashboard</title>
-
+    <title>SilentHub | Private Gateway</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
+    
+    <style>
+        .summary-section { margin-top: 30px; }
+        .section-header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border, #222);
+        }
+        .section-header h3 { font-size: 1.1rem; color: #fff; margin: 0; font-weight: 500; }
+        .badge { 
+            background: rgba(0, 255, 136, 0.1); color: #00ff88; padding: 4px 10px; 
+            border-radius: 20px; font-size: 0.75rem; font-weight: bold; border: 1px solid rgba(0,255,136,0.2); 
+        }
+        .badge.alert { background: rgba(255, 68, 68, 0.1); color: #ff4444; border-color: rgba(255,68,68,0.2); }
+        .table-container { 
+            background: var(--card, #121212); border: 1px solid var(--border, #222); 
+            border-radius: 12px; overflow-x: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        .modern-table { width: 100%; border-collapse: collapse; text-align: left; white-space: nowrap; }
+        .modern-table th { 
+            padding: 16px 20px; color: #777; font-size: 0.8rem; font-weight: 600; 
+            text-transform: uppercase; border-bottom: 1px solid var(--border, #222); background: rgba(255,255,255,0.01); 
+        }
+        .modern-table td { padding: 16px 20px; color: #ccc; font-size: 0.9rem; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .modern-table tr:hover td { background: rgba(255,255,255,0.02); }
+        .modern-table tr:last-child td { border-bottom: none; }
+        .status-success { color: #00ff88; font-weight: 600; }
+        .status-failed { color: #ff4444; font-weight: 600; }
+        .text-dim { color: #666; font-family: monospace; }
+        .uid-text { color: #aaa; font-family: monospace; letter-spacing: 0.5px; }
+    </style>
 </head>
 
 <body class="dashboard-body">
 
 <div class="dashboard-layout">
 
-    <!-- SIDEBAR -->
-
     <aside class="sidebar" id="sidebar">
-
         <div>
-
             <div class="sidebar-header">
-
-                <div class="sidebar-logo">
-                    SilentHub
-                </div>
-
-                <div class="sidebar-subtitle">
-                    PRIVATE PANEL
-                </div>
-
+                <div class="sidebar-logo">SilentHub</div>
+                <div class="sidebar-subtitle">INFRASTRUCTURE</div>
             </div>
-
             <nav class="menu">
-
                 <a class="active" href="#">
-                    🏠
-                    <span>Overview</span>
+                    🏠 <span>Overview</span>
                 </a>
-
                 <a href="#">
-                    📜
-                    <span>Scripts</span>
+                    📜 <span>Scripts</span>
                 </a>
-
                 <a href="#">
-                    🔑
-                    <span>Licenses</span>
+                    🔑 <span>Licenses</span>
                 </a>
-
                 <a href="#">
-                    📂
-                    <span>Files</span>
+                    📂 <span>Files</span>
                 </a>
-
                 <a href="#">
-                    📊
-                    <span>Analytics</span>
+                    📊 <span>Analytics</span>
                 </a>
-
                 <a href="#">
-                    ⚙
-                    <span>Settings</span>
+                    ⚙ <span>Settings</span>
                 </a>
-
             </nav>
-
         </div>
-
         <div class="user-box">
-
-            <p>Logged as</p>
-
-            <strong>{{ datos.usuario }}</strong>
-
+            <p>Active Session</p>
+            <strong>@{{ datos.usuario }}</strong>
         </div>
-
     </aside>
-
-    <!-- Overlay -->
 
     <div class="sidebar-overlay" id="overlay"></div>
 
-    <!-- MAIN -->
-
     <main class="dashboard-main">
-
         <header class="topbar">
-
             <div class="topbar-left">
-
-                <button class="menu-toggle" id="menuToggle">
-
-                    ☰
-
-                </button>
-
+                <button class="menu-toggle" id="menuToggle">☰</button>
                 <div>
-
-                    <h2>SilentHub</h2>
-
-                    <p>Private Control Panel</p>
-
+                    <h2>System Overview</h2>
+                    <p>Live Node Telemetry</p>
                 </div>
-
             </div>
-
-            <a href="/logout" class="logout-btn">
-
-                LOGOUT
-
-            </a>
-
+            <a href="/logout" class="logout-btn">TERMINATE</a>
         </header>
 
         <section class="content">
 
             <div class="stats">
-
                 <div class="stat-card">
-
-                    <span>Server Status</span>
-
-                    <h3 class="online">
-
-                        ● {{ datos.estado }}
-
-                    </h3>
-
+                    <span>Network Status</span>
+                    <h3 class="online">● Secure Relay</h3>
                 </div>
-
                 <div class="stat-card">
-
-                    <span>Version</span>
-
-                    <h3>
-
-                        {{ datos.version }}
-
-                    </h3>
-
+                    <span>Environment</span>
+                    <h3>Production</h3>
                 </div>
-
                 <div class="stat-card">
-
-                    <span>Uptime</span>
-
-                    <h3>
-
-                        {{ datos.tiempo }}
-
-                    </h3>
-
+                    <span>Server Uptime</span>
+                    <h3>{{ datos.tiempo }}</h3>
                 </div>
-
                 <div class="stat-card">
-
-                    <span>User</span>
-
-                    <h3>
-
-                        {{ datos.usuario }}
-
-                    </h3>
-
+                    <span>Admin Identity</span>
+                    <h3>{{ datos.usuario }}</h3>
                 </div>
-
             </div>
 
-            <section class="content-panel">
+            <section class="content-panel" style="background: transparent; border: none; padding: 0;">
 
-                <h2>
-
-                    Modules
-
-                </h2>
-
-                <div class="modules-grid">
-
-                    <div class="module-box">
-
-                        <div class="icon">📜</div>
-
-                        <h3>Scripts</h3>
-
-                        <p>
-                            Upload, edit and manage all Lua scripts from one place.
-                        </p>
-
+                <div class="summary-section">
+                    <div class="section-header">
+                        <h3>Script Execution Stream</h3>
+                        <span class="badge">Live Monitoring</span>
                     </div>
-
-                    <div class="module-box">
-
-                        <div class="icon">🔑</div>
-
-                        <h3>Licenses</h3>
-
-                        <p>
-                            Generate, revoke and monitor license keys.
-                        </p>
-
+                    <div class="table-container">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Target User</th>
+                                    <th>Universe ID</th>
+                                    <th>Origin IP</th>
+                                    <th>Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for exe in ejecuciones %}
+                                <tr>
+                                    <td style="color: #fff; font-weight: 500;">{{ exe.roblox_username }}</td>
+                                    <td class="uid-text">{{ exe.universe_id }}</td>
+                                    <td class="text-dim">{{ exe.ip_address }}</td>
+                                    <td class="text-dim">{{ exe.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" style="text-align: center; color: #555; padding: 30px;">
+                                        Awaiting incoming connections...
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
+                </div>
 
-                    <div class="module-box">
-
-                        <div class="icon">📂</div>
-
-                        <h3>File Manager</h3>
-
-                        <p>
-                            Browse and organize every uploaded resource.
-                        </p>
-
+                <div class="summary-section">
+                    <div class="section-header">
+                        <h3>Authentication Audit</h3>
+                        <span class="badge {% if seguridad and seguridad[0].status == 'FAILED' %}alert{% endif %}">
+                            System Access
+                        </span>
                     </div>
-
-                    <div class="module-box">
-
-                        <div class="icon">📊</div>
-
-                        <h3>Analytics</h3>
-
-                        <p>
-                            View usage statistics and server activity.
-                        </p>
-
+                    <div class="table-container">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Attempted Login</th>
+                                    <th>Client IP</th>
+                                    <th>Authorization</th>
+                                    <th>Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in seguridad %}
+                                <tr>
+                                    <td style="color: #fff;">{{ log.attempted_username }}</td>
+                                    <td class="text-dim">{{ log.ip_address }}</td>
+                                    <td>
+                                        <span class="{% if log.status == 'SUCCESS' %}status-success{% else %}status-failed{% endif %}">
+                                            {{ log.status }}
+                                        </span>
+                                    </td>
+                                    <td class="text-dim">{{ log.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" style="text-align: center; color: #555; padding: 30px;">
+                                        No access logs recorded.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
-
-                    <div class="module-box">
-
-                        <div class="icon">🛡</div>
-
-                        <h3>Security</h3>
-
-                        <p>
-                            Review authentication attempts and security events.
-                        </p>
-
-                    </div>
-
-                    <div class="module-box">
-
-                        <div class="icon">⚙</div>
-
-                        <h3>Settings</h3>
-
-                        <p>
-                            Configure SilentHub and customize your panel.
-                        </p>
-
-                    </div>
-
                 </div>
 
             </section>
-
         </section>
-
     </main>
 
 </div>
 
 <script src="{{ url_for('static', filename='script.js') }}"></script>
-
 </body>
-
 </html>
