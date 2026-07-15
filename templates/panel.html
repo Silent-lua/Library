@@ -1,47 +1,75 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 
 <head>
 
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>SilentHub Panel</title>
+    <title>SilentHub Dashboard</title>
 
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
 </head>
 
-<body class="dashboard-body">
+<body>
 
 <div class="dashboard-layout">
 
     <!-- SIDEBAR -->
 
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
 
-        <div class="sidebar-logo">
+        <div>
 
-            <h1>SilentHub</h1>
+            <div class="sidebar-header">
 
-            <span>PRIVATE PANEL</span>
+                <div class="sidebar-logo">
+                    SilentHub
+                </div>
+
+                <div class="sidebar-subtitle">
+                    PRIVATE PANEL
+                </div>
+
+            </div>
+
+            <nav class="menu">
+
+                <a class="active" href="#">
+                    🏠
+                    <span>Overview</span>
+                </a>
+
+                <a href="#">
+                    📜
+                    <span>Scripts</span>
+                </a>
+
+                <a href="#">
+                    🔑
+                    <span>Licenses</span>
+                </a>
+
+                <a href="#">
+                    📂
+                    <span>Files</span>
+                </a>
+
+                <a href="#">
+                    📊
+                    <span>Analytics</span>
+                </a>
+
+                <a href="#">
+                    ⚙
+                    <span>Settings</span>
+                </a>
+
+            </nav>
 
         </div>
-
-        <nav class="menu">
-
-            <a href="#" class="active">🏠 Overview</a>
-
-            <a href="#">📜 Scripts</a>
-
-            <a href="#">🔑 Licenses</a>
-
-            <a href="#">📊 Logs</a>
-
-            <a href="#">⚙ Settings</a>
-
-        </nav>
 
         <div class="user-box">
 
@@ -53,19 +81,31 @@
 
     </aside>
 
+    <!-- Overlay -->
 
+    <div class="sidebar-overlay" id="overlay"></div>
 
-    <!-- CONTENIDO -->
+    <!-- MAIN -->
 
     <main class="dashboard-main">
 
         <header class="topbar">
 
-            <div>
+            <div class="topbar-left">
 
-                <h2>SilentHub Dashboard</h2>
+                <button class="menu-toggle" id="menuToggle">
 
-                <p>Private Control Panel</p>
+                    ☰
+
+                </button>
+
+                <div>
+
+                    <h2>SilentHub</h2>
+
+                    <p>Private Control Panel</p>
+
+                </div>
 
             </div>
 
@@ -77,99 +117,153 @@
 
         </header>
 
+        <section class="content">
 
+            <div class="stats">
 
-        <!-- ESTADÍSTICAS -->
+                <div class="stat-card">
 
-        <section class="stats">
+                    <span>Server Status</span>
 
-            <div class="stat-card">
+                    <h3 class="online">
 
-                <span>Server</span>
+                        ● {{ datos.estado }}
 
-                <h3 class="online">
-
-                    ● {{ datos.estado }}
-
-                </h3>
-
-            </div>
-
-            <div class="stat-card">
-
-                <span>Version</span>
-
-                <h3>{{ datos.version }}</h3>
-
-            </div>
-
-            <div class="stat-card">
-
-                <span>Uptime</span>
-
-                <h3>{{ datos.tiempo }}</h3>
-
-            </div>
-
-        </section>
-
-
-
-        <!-- MÓDULOS -->
-
-        <section class="content-panel">
-
-            <h2>Modules</h2>
-
-            <div class="modules-grid">
-
-                <div class="module-box">
-
-                    <div class="icon">📜</div>
-
-                    <h3>Scripts</h3>
-
-                    <p>Manage all Lua scripts.</p>
+                    </h3>
 
                 </div>
 
-                <div class="module-box">
+                <div class="stat-card">
 
-                    <div class="icon">🔑</div>
+                    <span>Version</span>
 
-                    <h3>Licenses</h3>
+                    <h3>
 
-                    <p>Create and manage keys.</p>
+                        {{ datos.version }}
 
-                </div>
-
-                <div class="module-box">
-
-                    <div class="icon">📊</div>
-
-                    <h3>Logs</h3>
-
-                    <p>View security events.</p>
+                    </h3>
 
                 </div>
 
-                <div class="module-box">
+                <div class="stat-card">
 
-                    <div class="icon">⚙</div>
+                    <span>Uptime</span>
 
-                    <h3>Settings</h3>
+                    <h3>
 
-                    <p>Configure SilentHub.</p>
+                        {{ datos.tiempo }}
+
+                    </h3>
+
+                </div>
+
+                <div class="stat-card">
+
+                    <span>User</span>
+
+                    <h3>
+
+                        {{ datos.usuario }}
+
+                    </h3>
 
                 </div>
 
             </div>
+
+            <section class="content-panel">
+
+                <h2>
+
+                    Modules
+
+                </h2>
+
+                <div class="modules-grid">
+
+                    <div class="module-box">
+
+                        <div class="icon">📜</div>
+
+                        <h3>Scripts</h3>
+
+                        <p>
+                            Upload, edit and manage all Lua scripts from one place.
+                        </p>
+
+                    </div>
+
+                    <div class="module-box">
+
+                        <div class="icon">🔑</div>
+
+                        <h3>Licenses</h3>
+
+                        <p>
+                            Generate, revoke and monitor license keys.
+                        </p>
+
+                    </div>
+
+                    <div class="module-box">
+
+                        <div class="icon">📂</div>
+
+                        <h3>File Manager</h3>
+
+                        <p>
+                            Browse and organize every uploaded resource.
+                        </p>
+
+                    </div>
+
+                    <div class="module-box">
+
+                        <div class="icon">📊</div>
+
+                        <h3>Analytics</h3>
+
+                        <p>
+                            View usage statistics and server activity.
+                        </p>
+
+                    </div>
+
+                    <div class="module-box">
+
+                        <div class="icon">🛡</div>
+
+                        <h3>Security</h3>
+
+                        <p>
+                            Review authentication attempts and security events.
+                        </p>
+
+                    </div>
+
+                    <div class="module-box">
+
+                        <div class="icon">⚙</div>
+
+                        <h3>Settings</h3>
+
+                        <p>
+                            Configure SilentHub and customize your panel.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </section>
 
         </section>
 
     </main>
 
 </div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
 
 </body>
 
