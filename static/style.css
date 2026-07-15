@@ -1,28 +1,5 @@
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
-
-
-body{
-
-    min-height:100vh;
-
-    background:#030303;
-
-    color:white;
-
-    font-family:
-    "Segoe UI",
-    Arial,
-    sans-serif;
-
-}
-
-
 /* =========================
-   LOGIN / GENERAL
+   LOGIN FIX SILENTHUB
 ========================= */
 
 
@@ -30,11 +7,16 @@ body{
 
     position:fixed;
 
-    inset:0;
+    top:0;
+    left:0;
+
+    width:100%;
+    height:100%;
 
     z-index:0;
 
 }
+
 
 
 .background-glow{
@@ -43,101 +25,184 @@ body{
 
     inset:0;
 
+    z-index:1;
+
+    pointer-events:none;
+
     background:
+
     radial-gradient(
         circle,
-        rgba(0,255,120,.12),
-        transparent 70%
-    );
-
-}
-
-
-/* =========================
-   DASHBOARD
-========================= */
-
-
-.dashboard-body{
-
-    background:
-
-    radial-gradient(
-        circle at top left,
-        #07351f,
-        #020202 45%
+        rgba(0,255,120,0.15),
+        transparent 60%
     );
 
 }
 
 
 
-.dashboard-layout{
 
+.login-box{
 
-    display:flex;
+    position:fixed;
 
+    top:50%;
+    left:50%;
 
-    min-height:100vh;
+    transform:
+    translate(-50%,-50%);
 
+    width:420px;
 
-}
+    max-width:90%;
 
-
-
-/* =========================
-   SIDEBAR
-========================= */
-
-
-.sidebar{
-
-
-    width:270px;
-
-
-    padding:30px 20px;
+    padding:40px;
 
 
     background:
 
-    rgba(15,15,15,.75);
+    rgba(15,15,15,0.85);
 
 
     backdrop-filter:
+
     blur(20px);
 
 
-    border-right:
+
+    border-radius:25px;
+
+
+    border:
 
     1px solid
-    rgba(0,255,120,.15);
+    rgba(0,255,120,.25);
+
+
+    z-index:10;
+
+
+    text-align:center;
 
 
 }
 
 
 
-.sidebar-logo h1{
+.logo h1{
 
 
-    font-size:35px;
+    font-size:45px;
 
-
-    letter-spacing:2px;
+    color:white;
 
 
 }
 
 
 
-.sidebar-logo span{
+.logo p{
 
+
+    margin-top:10px;
 
     color:#00ff88;
 
 
-    font-size:12px;
+}
+
+
+
+
+
+.login-box input{
+
+
+    display:block;
+
+
+    width:100%;
+
+
+    height:55px;
+
+
+    margin-top:20px;
+
+
+    padding:0 20px;
+
+
+    border-radius:12px;
+
+
+    border:none;
+
+
+    outline:none;
+
+
+    background:#111;
+
+
+    color:white;
+
+
+    font-size:16px;
+
+
+}
+
+
+
+.login-box input:focus{
+
+
+    border:
+
+    1px solid #00ff88;
+
+
+}
+
+
+
+
+
+.access-btn{
+
+
+    width:100%;
+
+
+    height:55px;
+
+
+    margin-top:25px;
+
+
+    border:none;
+
+
+    border-radius:12px;
+
+
+    cursor:pointer;
+
+
+    background:
+
+    linear-gradient(
+    90deg,
+    #00ff88,
+    #00cc66
+    );
+
+
+    color:black;
+
+
+    font-weight:bold;
 
 
     letter-spacing:3px;
@@ -147,490 +212,44 @@ body{
 
 
 
-.menu{
 
 
-    margin-top:50px;
-
-
-    display:flex;
-
-
-    flex-direction:column;
-
-
-    gap:12px;
-
-
-}
-
-
-
-.menu a{
-
-
-    padding:15px;
-
-
-    color:#aaa;
-
-
-    text-decoration:none;
-
-
-    border-radius:12px;
-
-
-    transition:.3s;
-
-
-}
-
-
-
-.menu a:hover,
-.menu .active{
-
-
-    background:
-
-    rgba(0,255,120,.15);
-
-
-    color:#00ff88;
-
-
-}
-
-
-
-.user-box{
-
-
-    position:absolute;
-
-
-    bottom:30px;
-
-
-    width:220px;
-
-
-    padding:20px;
-
-
-    border-radius:15px;
-
-
-    background:
-
-    rgba(255,255,255,.05);
-
-
-}
-
-
-
-.user-box p{
-
-
-    color:#888;
-
-
-}
-
-
-
-/* =========================
-   MAIN
-========================= */
-
-
-.dashboard-main{
-
-
-    flex:1;
-
-
-    padding:35px;
-
-
-}
-
-
-
-.topbar{
-
-
-    display:flex;
-
-
-    justify-content:space-between;
-
-
-    align-items:center;
-
-
-    margin-bottom:35px;
-
-
-}
-
-
-
-.topbar h2{
-
-
-    font-size:35px;
-
-
-}
-
-
-
-.topbar p{
-
-
-    color:#888;
-
-
-}
-
-
-
-.logout-btn{
-
-
-    padding:14px 25px;
-
-
-    background:#00ff88;
-
-
-    color:black;
-
-
-    text-decoration:none;
-
-
-    border-radius:12px;
-
-
-    font-weight:bold;
-
-
-    transition:.3s;
-
-
-}
-
-
-
-.logout-btn:hover{
+.access-btn:hover{
 
 
     box-shadow:
 
-    0 0 20px #00ff88;
+    0 0 25px #00ff88;
 
 
 }
 
 
 
-/* =========================
-   STATS
-========================= */
 
 
-.stats{
-
-
-    display:grid;
-
-
-    grid-template-columns:
-
-    repeat(
-    auto-fit,
-    minmax(220px,1fr)
-    );
-
-
-    gap:20px;
-
-
-}
-
-
-
-.stat-card{
-
-
-    padding:25px;
-
-
-    border-radius:20px;
-
-
-    background:
-
-    rgba(20,20,20,.65);
-
-
-    backdrop-filter:
-    blur(15px);
-
-
-    border:
-
-    1px solid
-    rgba(0,255,120,.15);
-
-
-}
-
-
-
-.stat-card span{
-
-
-    color:#888;
-
-
-}
-
-
-
-.stat-card h3{
-
-
-    margin-top:15px;
-
-
-    font-size:25px;
-
-
-}
-
-
-
-.online{
-
-
-    color:#00ff88;
-
-
-}
-
-
-
-/* =========================
-   MODULES
-========================= */
-
-
-.content-panel{
-
-
-    margin-top:40px;
-
-
-}
-
-
-
-.content-panel h2{
-
-
-    margin-bottom:20px;
-
-
-}
-
-
-
-.modules-grid{
-
-
-    display:grid;
-
-
-    grid-template-columns:
-
-    repeat(
-    auto-fit,
-    minmax(230px,1fr)
-    );
-
-
-    gap:20px;
-
-
-}
-
-
-
-.module-box{
-
-
-    padding:25px;
-
-
-    border-radius:20px;
-
-
-    background:
-
-    rgba(20,20,20,.65);
-
-
-    border:
-
-    1px solid
-    rgba(0,255,120,.15);
-
-
-    transition:.3s;
-
-
-}
-
-
-
-.module-box:hover{
-
-
-    transform:
-    translateY(-6px);
-
-
-    box-shadow:
-
-    0 0 25px
-    rgba(0,255,120,.15);
-
-
-}
-
-
-
-.module-box .icon{
-
-
-    font-size:35px;
-
-
-    margin-bottom:15px;
-
-
-}
-
-
-
-.module-box h3{
-
-
-    color:#00ff88;
-
-
-    margin-bottom:10px;
-
-
-}
-
-
-
-.module-box p{
-
-
-    color:#aaa;
-
-
-}
-
-
-
-/* =========================
-   MOBILE
-========================= */
-
-
-@media(max-width:800px){
-
-
-.dashboard-layout{
-
-
-    flex-direction:column;
-
-
-}
-
-
-
-.sidebar{
-
-
-    width:100%;
-
-
-}
-
-
-
-.menu{
-
-
-    flex-direction:row;
-
-
-    overflow:auto;
-
-
-}
-
-
-
-.user-box{
-
-
-    position:static;
-
-
-    width:100%;
+.footer-text{
 
 
     margin-top:25px;
 
 
-}
+    color:#777;
 
 
-
-.dashboard-main{
-
-
-    padding:20px;
+    font-size:13px;
 
 
 }
 
 
 
-.topbar{
+
+.error{
 
 
-    flex-direction:column;
+    margin-top:20px;
 
-
-    gap:20px;
-
-
-    align-items:flex-start;
-
-
-}
-
+    color:#ff5555;
 
 }
