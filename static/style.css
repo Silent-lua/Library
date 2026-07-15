@@ -1,213 +1,184 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+
+body{
+
+    min-height:100vh;
+
+    background:#030303;
+
+    color:white;
+
+    font-family:
+    "Segoe UI",
+    Arial,
+    sans-serif;
+
+}
+
+
 /* =========================
-   SILENTHUB HACKER LOGIN
+   LOGIN / GENERAL
 ========================= */
 
 
-.login-box{
+#matrix{
 
     position:fixed;
 
-    top:50%;
-    left:50%;
+    inset:0;
 
-    transform:
-    translate(-50%,-50%);
+    z-index:0;
 
-    width:420px;
+}
 
-    max-width:90%;
 
-    padding:40px;
+.background-glow{
 
-    background:transparent;
+    position:fixed;
 
-    border:none;
+    inset:0;
 
-    box-shadow:none;
+    background:
+    radial-gradient(
+        circle,
+        rgba(0,255,120,.12),
+        transparent 70%
+    );
 
-    backdrop-filter:none;
+}
 
-    z-index:10;
 
-    text-align:center;
+/* =========================
+   DASHBOARD
+========================= */
+
+
+.dashboard-body{
+
+    background:
+
+    radial-gradient(
+        circle at top left,
+        #07351f,
+        #020202 45%
+    );
 
 }
 
 
 
-/* TITULO RGB NEGRO + CONTORNO */
-
-.logo h1{
-
-    font-size:55px;
-
-    letter-spacing:4px;
-
-    color:rgb(0,0,0);
+.dashboard-layout{
 
 
-    -webkit-text-stroke:
-
-    2px rgb(153,255,255);
+    display:flex;
 
 
-    text-shadow:
-
-    0 0 15px
-    rgb(153,255,255);
+    min-height:100vh;
 
 
 }
 
 
 
+/* =========================
+   SIDEBAR
+========================= */
 
 
-.logo p{
+.sidebar{
 
 
-    margin-top:10px;
+    width:270px;
 
 
-    font-size:15px;
+    padding:30px 20px;
+
+
+    background:
+
+    rgba(15,15,15,.75);
+
+
+    backdrop-filter:
+    blur(20px);
+
+
+    border-right:
+
+    1px solid
+    rgba(0,255,120,.15);
+
+
+}
+
+
+
+.sidebar-logo h1{
+
+
+    font-size:35px;
+
+
+    letter-spacing:2px;
+
+
+}
+
+
+
+.sidebar-logo span{
+
+
+    color:#00ff88;
+
+
+    font-size:12px;
 
 
     letter-spacing:3px;
 
 
-    color:rgb(0,0,0);
+}
 
 
-    -webkit-text-stroke:
 
-    0.8px rgb(153,255,255);
+.menu{
+
+
+    margin-top:50px;
+
+
+    display:flex;
+
+
+    flex-direction:column;
+
+
+    gap:12px;
 
 
 }
 
 
 
-
-.login-box input{
-
-
-    display:block;
+.menu a{
 
 
-    width:100%;
+    padding:15px;
 
 
-    height:55px;
+    color:#aaa;
 
 
-    margin-top:20px;
-
-
-    padding:0 20px;
+    text-decoration:none;
 
 
     border-radius:12px;
-
-
-    background:
-
-    rgba(0,0,0,0.35);
-
-
-    border:
-
-    1px solid
-    rgb(153,255,255);
-
-
-    color:white;
-
-
-    outline:none;
-
-
-    font-size:16px;
-
-
-    backdrop-filter:blur(5px);
-
-
-}
-
-
-
-
-
-.login-box input::placeholder{
-
-
-    color:
-
-    rgb(153,255,255);
-
-
-}
-
-
-
-
-
-.login-box input:focus{
-
-
-    box-shadow:
-
-
-    0 0 20px
-    rgb(153,255,255);
-
-
-}
-
-
-
-
-
-.access-btn{
-
-
-    margin-top:30px;
-
-
-    width:100%;
-
-
-    height:58px;
-
-
-    border-radius:15px;
-
-
-    cursor:pointer;
-
-
-    font-size:18px;
-
-
-    font-weight:bold;
-
-
-    letter-spacing:4px;
-
-
-    color:black;
-
-
-    background:
-
-
-    rgb(153,255,255);
-
-
-    border:
-
-    2px solid
-    black;
 
 
     transition:.3s;
@@ -217,44 +188,449 @@
 
 
 
-
-.access-btn:hover{
-
-
-    box-shadow:
+.menu a:hover,
+.menu .active{
 
 
-    0 0 30px
-    rgb(153,255,255);
+    background:
+
+    rgba(0,255,120,.15);
 
 
-    transform:
-
-    translateY(-3px);
+    color:#00ff88;
 
 
 }
 
 
 
+.user-box{
 
 
-.footer-text{
+    position:absolute;
 
 
-    margin-top:30px;
+    bottom:30px;
 
 
-    color:
-
-    rgb(153,255,255);
+    width:220px;
 
 
-    text-shadow:
+    padding:20px;
 
 
-    0 0 10px
-    rgb(153,255,255);
+    border-radius:15px;
+
+
+    background:
+
+    rgba(255,255,255,.05);
+
+
+}
+
+
+
+.user-box p{
+
+
+    color:#888;
+
+
+}
+
+
+
+/* =========================
+   MAIN
+========================= */
+
+
+.dashboard-main{
+
+
+    flex:1;
+
+
+    padding:35px;
+
+
+}
+
+
+
+.topbar{
+
+
+    display:flex;
+
+
+    justify-content:space-between;
+
+
+    align-items:center;
+
+
+    margin-bottom:35px;
+
+
+}
+
+
+
+.topbar h2{
+
+
+    font-size:35px;
+
+
+}
+
+
+
+.topbar p{
+
+
+    color:#888;
+
+
+}
+
+
+
+.logout-btn{
+
+
+    padding:14px 25px;
+
+
+    background:#00ff88;
+
+
+    color:black;
+
+
+    text-decoration:none;
+
+
+    border-radius:12px;
+
+
+    font-weight:bold;
+
+
+    transition:.3s;
+
+
+}
+
+
+
+.logout-btn:hover{
+
+
+    box-shadow:
+
+    0 0 20px #00ff88;
+
+
+}
+
+
+
+/* =========================
+   STATS
+========================= */
+
+
+.stats{
+
+
+    display:grid;
+
+
+    grid-template-columns:
+
+    repeat(
+    auto-fit,
+    minmax(220px,1fr)
+    );
+
+
+    gap:20px;
+
+
+}
+
+
+
+.stat-card{
+
+
+    padding:25px;
+
+
+    border-radius:20px;
+
+
+    background:
+
+    rgba(20,20,20,.65);
+
+
+    backdrop-filter:
+    blur(15px);
+
+
+    border:
+
+    1px solid
+    rgba(0,255,120,.15);
+
+
+}
+
+
+
+.stat-card span{
+
+
+    color:#888;
+
+
+}
+
+
+
+.stat-card h3{
+
+
+    margin-top:15px;
+
+
+    font-size:25px;
+
+
+}
+
+
+
+.online{
+
+
+    color:#00ff88;
+
+
+}
+
+
+
+/* =========================
+   MODULES
+========================= */
+
+
+.content-panel{
+
+
+    margin-top:40px;
+
+
+}
+
+
+
+.content-panel h2{
+
+
+    margin-bottom:20px;
+
+
+}
+
+
+
+.modules-grid{
+
+
+    display:grid;
+
+
+    grid-template-columns:
+
+    repeat(
+    auto-fit,
+    minmax(230px,1fr)
+    );
+
+
+    gap:20px;
+
+
+}
+
+
+
+.module-box{
+
+
+    padding:25px;
+
+
+    border-radius:20px;
+
+
+    background:
+
+    rgba(20,20,20,.65);
+
+
+    border:
+
+    1px solid
+    rgba(0,255,120,.15);
+
+
+    transition:.3s;
+
+
+}
+
+
+
+.module-box:hover{
+
+
+    transform:
+    translateY(-6px);
+
+
+    box-shadow:
+
+    0 0 25px
+    rgba(0,255,120,.15);
+
+
+}
+
+
+
+.module-box .icon{
+
+
+    font-size:35px;
+
+
+    margin-bottom:15px;
+
+
+}
+
+
+
+.module-box h3{
+
+
+    color:#00ff88;
+
+
+    margin-bottom:10px;
+
+
+}
+
+
+
+.module-box p{
+
+
+    color:#aaa;
+
+
+}
+
+
+
+/* =========================
+   MOBILE
+========================= */
+
+
+@media(max-width:800px){
+
+
+.dashboard-layout{
+
+
+    flex-direction:column;
+
+
+}
+
+
+
+.sidebar{
+
+
+    width:100%;
+
+
+}
+
+
+
+.menu{
+
+
+    flex-direction:row;
+
+
+    overflow:auto;
+
+
+}
+
+
+
+.user-box{
+
+
+    position:static;
+
+
+    width:100%;
+
+
+    margin-top:25px;
+
+
+}
+
+
+
+.dashboard-main{
+
+
+    padding:20px;
+
+
+}
+
+
+
+.topbar{
+
+
+    flex-direction:column;
+
+
+    gap:20px;
+
+
+    align-items:flex-start;
+
+
+}
 
 
 }
