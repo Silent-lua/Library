@@ -7,7 +7,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>SilentHub settings</title>
+<title>SilentHub Dashboard</title>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
@@ -40,38 +40,45 @@
 
 
 
-
         <nav class="menu">
 
 
             <a href="#" class="active">
+
                 🏠 Overview
+
             </a>
 
 
             <a href="#">
+
                 📜 Scripts
+
             </a>
 
 
             <a href="#">
+
                 🔑 Licenses
+
             </a>
 
 
             <a href="#">
+
                 📊 Logs
+
             </a>
 
 
             <a href="#">
+
                 ⚙ Settings
+
             </a>
 
 
         </nav>
-
-
 
 
 
@@ -84,7 +91,9 @@
 
 
             <strong>
+
                 {{ datos.usuario }}
+
             </strong>
 
 
@@ -98,13 +107,9 @@
 
 
 
-
-    <!-- PANEL PRINCIPAL -->
-
+    <!-- MAIN -->
 
     <main class="dashboard-main">
-
-
 
 
 
@@ -115,12 +120,12 @@
 
 
                 <h2>
-                    усилия, процветание и дисциплина
+                    Dashboard
                 </h2>
 
 
                 <p>
-                    Welcome to SilentHub
+                    Welcome back to SilentHub
                 </p>
 
 
@@ -128,11 +133,11 @@
 
 
 
-
             <a href="/logout" class="logout-btn">
-                LOGOUT
-            </a>
 
+                LOGOUT
+
+            </a>
 
 
 
@@ -142,9 +147,7 @@
 
 
 
-
-
-        <!-- ESTADÍSTICAS -->
+        <!-- STATS -->
 
 
         <section class="stats">
@@ -212,17 +215,13 @@
 
 
 
-
         </section>
 
 
 
 
 
-
-
-
-        <!-- MODULOS -->
+        <!-- CONTENT -->
 
 
         <section class="content-panel">
@@ -230,17 +229,14 @@
 
 
             <h2>
+
                 System Modules
+
             </h2>
 
 
 
-
-
             <div class="modules-grid">
-
-
-
 
 
 
@@ -258,14 +254,11 @@
 
 
                     <p>
-                        Settings scripts.
+                        Manage your scripts vault.
                     </p>
 
 
                 </div>
-
-
-
 
 
 
@@ -285,14 +278,11 @@
 
 
                     <p>
-                        Settings keys.
+                        Create and manage keys.
                     </p>
 
 
                 </div>
-
-
-
 
 
 
@@ -322,13 +312,10 @@
 
 
 
-
-
-
                 <div class="module-box">
 
 
-                    <div="icon">
+                    <div class="icon">
                         ⚙️
                     </div>
 
@@ -339,14 +326,11 @@
 
 
                     <p>
-                        SilentHub settings.
+                        Manage SilentHub settings.
                     </p>
 
 
                 </div>
-
-
-
 
 
 
@@ -359,13 +343,11 @@
 
 
 
-
     </main>
 
 
 
 </div>
-
 
 
 
