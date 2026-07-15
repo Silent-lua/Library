@@ -1,669 +1,171 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SilentHub | Private Gateway</title>
+    <title>SilentHub</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    
-    <style>
-        .summary-section {
-            margin-top: 30px;
-        }
-        .summary-section:first-of-type {
-            margin-top: 0;
-        }
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--border, #222);
-        }
-        .section-header h3 {
-            font-size: 1.1rem;
-            color: #fff;
-            margin: 0;
-            font-weight: 500;
-        }
-        .badge {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            border: 1px solid transparent;
-        }
-        .badge-green {
-            background: rgba(0, 255, 136, 0.1);
-            color: #00ff88;
-            border-color: rgba(0,255,136,0.2);
-        }
-        .badge-red {
-            background: rgba(255, 68, 68, 0.1);
-            color: #ff4444;
-            border-color: rgba(255,68,68,0.2);
-        }
-        .badge-purple {
-            background: rgba(138, 43, 226, 0.1);
-            color: #b366ff;
-            border-color: rgba(138, 43, 226, 0.2);
-        }
-        .badge-orange {
-            background: rgba(255, 165, 0, 0.1);
-            color: #ffa500;
-            border-color: rgba(255, 165, 0, 0.2);
-        }
-        
-        .table-container {
-            background: var(--card, #121212);
-            border: 1px solid var(--border, #222);
-            border-radius: 12px;
-            overflow-x: auto;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-        }
-        .modern-table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            white-space: nowrap;
-        }
-        .modern-table th {
-            padding: 16px 20px;
-            color: #777;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            border-bottom: 1px solid var(--border, #222);
-            background: rgba(255,255,255,0.01);
-        }
-        .modern-table td {
-            padding: 16px 20px;
-            color: #ccc;
-            font-size: 0.9rem;
-            border-bottom: 1px solid rgba(255,255,255,0.03);
-        }
-        .modern-table tr:hover td {
-            background: rgba(255,255,255,0.02);
-        }
-        .modern-table tr:last-child td {
-            border-bottom: none;
-        }
-        
-        .status-success {
-            color: #00ff88;
-            font-weight: 600;
-        }
-        .status-failed {
-            color: #ff4444;
-            font-weight: 600;
-        }
-        .text-dim {
-            color: #666;
-            font-family: monospace;
-        }
-        .mono-text {
-            font-family: monospace;
-            letter-spacing: 0.5px;
-        }
-
-        .header-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-        }
-        .header-title-group {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .time-filters {
-            display: flex;
-            background: rgba(255,255,255,0.03);
-            border-radius: 8px;
-            padding: 4px;
-            border: 1px solid var(--border, #222);
-        }
-        .time-filters button {
-            background: transparent;
-            border: none;
-            color: #777;
-            padding: 6px 14px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .time-filters button:hover {
-            color: #ccc;
-        }
-        .time-filters button.active {
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-
-        .quick-stats-row {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-        .mini-stat-card {
-            background: #121212;
-            border: 1px solid #222;
-            border-left: 4px solid #00ff88;
-            border-radius: 8px;
-            padding: 12px 18px;
-            display: flex;
-            flex-direction: column;
-        }
-        .mini-stat-card.failed-stat {
-            border-left-color: #ff4444;
-        }
-        .mini-stat-card span {
-            font-size: 0.75rem;
-            color: #777;
-            text-transform: uppercase;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-        .mini-stat-card strong {
-            font-size: 1.4rem;
-            color: #fff;
-            margin-top: 5px;
-            font-family: monospace;
-        }
-        .text-red {
-            color: #ff4444 !important;
-        }
-
-        .top-status-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-        .status-card {
-            background: #121212;
-            border: 1px solid #222;
-            border-left: 4px solid #00ff88;
-            border-radius: 12px;
-            padding: 16px 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .status-label {
-            font-size: 0.75rem;
-            color: #666;
-            text-transform: uppercase;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-        .status-value {
-            font-size: 1.3rem;
-            color: #fff;
-            font-weight: bold;
-        }
-        .green-text {
-            color: #00ff88;
-        }
-
-        .license-layout-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
-            align-items: start;
-            margin-bottom: 30px;
-        }
-        @media (max-width: 900px) {
-            .license-layout-grid {
-                grid-template-columns: 1fr;
-            }
-            .quick-stats-row {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        .form-container {
-            background: #121212;
-            border: 1px solid #222;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-        }
-        .form-container h4 {
-            margin-top: 0;
-            margin-bottom: 15px;
-            color: #fff;
-            font-size: 1rem;
-            font-weight: 500;
-            border-bottom: 1px solid #222;
-            padding-bottom: 10px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            font-size: 0.75rem;
-            color: #777;
-            margin-bottom: 5px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        .form-control {
-            width: 100%;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 6px;
-            padding: 10px;
-            color: #fff;
-            font-size: 0.9rem;
-            box-sizing: border-box;
-            transition: border-color 0.3s;
-        }
-        .form-control:focus {
-            border-color: #00ff88;
-            outline: none;
-        }
-        .btn-submit {
-            width: 100%;
-            background: #00ff88;
-            color: #000;
-            border: none;
-            border-radius: 6px;
-            padding: 12px;
-            font-weight: bold;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: background 0.3s;
-            text-transform: uppercase;
-        }
-        .btn-submit:hover {
-            background: #00dd77;
-        }
-        .btn-revoke {
-            background: rgba(255, 68, 68, 0.1);
-            color: #ff4444;
-            border: 1px solid rgba(255, 68, 68, 0.2);
-            padding: 5px 10px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .btn-revoke:hover {
-            background: rgba(255, 68, 68, 0.2);
-            border-color: rgba(255, 68, 68, 0.4);
-        }
-        .btn-reactivate {
-            background: rgba(0, 255, 136, 0.1);
-            color: #00ff88;
-            border: 1px solid rgba(0, 255, 136, 0.2);
-            padding: 5px 10px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .btn-reactivate:hover {
-            background: rgba(0, 255, 136, 0.2);
-            border-color: rgba(0, 255, 136, 0.4);
-        }
-        .flash-container {
-            margin-bottom: 20px;
-        }
-        .flash-message {
-            background: rgba(255, 68, 68, 0.15);
-            color: #ff4444;
-            border: 1px solid rgba(255, 68, 68, 0.3);
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-    </style>
 </head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-item active" data-target="overview">Overview</div>
+        <div class="sidebar-item" data-target="scripts">Scripts</div>
+        <div class="sidebar-item" data-target="licenses">Licenses</div>
+        <div class="sidebar-item" data-target="files">Files</div>
+        <div class="sidebar-item" data-target="analytics">Analytics</div>
+        <div class="sidebar-item" data-target="settings">Settings</div>
+    </div>
 
-<body class="dashboard-body">
-
-<div class="dashboard-layout">
-
-    <aside class="sidebar" id="sidebar">
-        <div>
-            <div class="sidebar-header">
-                <div class="sidebar-logo">SilentHub</div>
-                <div class="sidebar-subtitle">INFRASTRUCTURE</div>
-            </div>
-            <nav class="menu">
-                <a class="active" href="#">🏠 <span>Overview</span></a>
-                <a href="#">📜 <span>Scripts</span></a>
-                <a href="#">🔑 <span>Licenses</span></a>
-                <a href="#">📂 <span>Files</span></a>
-                <a href="#">📊 <span>Analytics</span></a>
-                <a href="#">⚙ <span>Settings</span></a>
-            </nav>
-        </div>
-        <div class="user-box">
-            <p>Active Session</p>
-            <strong>@{{ datos.usuario }}</strong>
-        </div>
-    </aside>
-
-    <div class="sidebar-overlay" id="overlay"></div>
-
-    <main class="dashboard-main">
-        <header class="topbar">
-            <div class="topbar-left">
-                <button class="menu-toggle" id="menuToggle">☰</button>
-                <div>
-                    <h2>System Overview</h2>
-                    <p>Live Node Telemetry</p>
-                </div>
-            </div>
-            <a href="/logout" class="logout-btn">TERMINATE</a>
-        </header>
-
-        <section class="content">
-            <section class="content-panel" style="background: transparent; border: none; padding: 0;">
-
-                {% with messages = get_flashed_messages() %}
-                  {% if messages %}
-                    <div class="flash-container">
-                      {% for msg in messages %}
-                        <div class="flash-message">{{ msg }}</div>
-                      {% endfor %}
+    <div class="main-content">
+        <div class="panel-container">
+            <section id="overview-view" class="dashboard-view active-view">
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <span class="metric-title">Estado de Red</span>
+                        <div class="metric-value-container">
+                            <span class="status-indicator active-status"></span>
+                            <span class="metric-value">Secure Relay</span>
+                        </div>
                     </div>
-                  {% endif %}
-                {% endwith %}
-
-                <div class="top-status-grid">
-                    <div class="status-card">
-                        <span class="status-label">Network Status</span>
-                        <strong class="status-value green-text">● Secure Relay</strong>
+                    <div class="metric-card">
+                        <span class="metric-title">Entorno</span>
+                        <span class="metric-value">Producción</span>
                     </div>
-                    <div class="status-card">
-                        <span class="status-label">Environment</span>
-                        <strong class="status-value">Production</strong>
+                    <div class="metric-card">
+                        <span class="metric-title">Tiempo de Actividad</span>
+                        <span id="uptime-display" class="metric-value">0d 0h 7m</span>
                     </div>
-                    <div class="status-card">
-                        <span class="status-label">Server Uptime</span>
-                        <strong class="status-value">{{ datos.tiempo }}</strong>
-                    </div>
-                    <div class="status-card">
-                        <span class="status-label">Admin Identity</span>
-                        <strong class="status-value">admin</strong>
+                    <div class="metric-card">
+                        <span class="metric-title">Identidad Admin</span>
+                        <span class="metric-value">admin</span>
                     </div>
                 </div>
 
-                <div class="license-layout-grid">
-                    <div class="summary-section" style="margin-top: 0;">
-                        <div class="section-header">
-                            <h3>Active License Roster</h3>
-                            <span class="badge badge-green">Gateway Enabled</span>
-                        </div>
-                        <div class="table-container">
-                            <table class="modern-table">
-                                <thead>
-                                    <tr>
-                                        <th>Identificador</th>
-                                        <th>Estructura</th>
-                                        <th>Duración</th>
-                                        <th>Estado</th>
-                                        <th>Acción</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for lic in licencias %}
-                                    <tr>
-                                        <td style="color: #fff; font-weight: 600;" class="mono-text">{{ lic.clave }}</td>
-                                        <td>
-                                            {% if lic.tipo == 'Whitelist' %}
-                                                <span class="badge badge-purple">Whitelist</span>
-                                            {% else %}
-                                                <span class="badge badge-orange">KeySystem</span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="text-dim">{{ lic.duracion }}</td>
-                                        <td>
-                                            <span class="{% if lic.estado == 'Activa' %}status-success{% else %}status-failed{% endif %}">
-                                                {{ lic.estado }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <form action="/licencias/revocar/{{ lic.id }}" method="POST" style="display: inline;">
-                                                {% if lic.estado == 'Activa' %}
-                                                    <button type="submit" class="btn-revoke">REVOKE</button>
-                                                {% else %}
-                                                    <button type="submit" class="btn-reactivate">ACTIVATE</button>
-                                                {% endif %}
-                                            </form>
-                                        </td>
-                                    </tr>
-                                    {% else %}
-                                    <tr>
-                                        <td colspan="5" style="text-align: center; color: #555; padding: 30px;">
-                                            No active licenses generated.
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div class="form-container">
-                        <h4>Generate License</h4>
-                        <form action="/licencias/crear" method="POST">
-                            <div class="form-group">
-                                <label for="clave">Llave / Usuario Whitelist</label>
-                                <input type="text" id="clave" name="clave" class="form-control" placeholder="Dejar vacio para generar Key">
-                            </div>
-                            <div class="form-group">
-                                <label for="tipo">Estructura Acceso</label>
-                                <select id="tipo" name="tipo" class="form-control">
-                                    <option value="KeySystem">KeySystem</option>
-                                    <option value="Whitelist">Whitelist</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="duracion">Duración Acceso</label>
-                                <select id="duracion" name="duracion" class="form-control">
-                                    <option value="Dias">Días</option>
-                                    <option value="Semanas">Semanas</option>
-                                    <option value="Meses">Meses</option>
-                                    <option value="Permanent">Permanent</option>
-                                </select>
-                            </div>
-                            <button type="submit" class="btn-submit">Generate Access</button>
-                        </form>
-                    </div>
-                </div>
-
-                <div class="summary-section">
-                    <div class="section-header" style="flex-direction: column; align-items: flex-start; border-bottom: none; gap: 15px;">
-                        <div class="header-top">
-                            <div class="header-title-group">
-                                <h3>Script Execution Stream</h3>
-                                <span class="badge badge-green">Live Monitoring</span>
-                            </div>
-                            <div class="time-filters">
-                                <button class="active" data-filter="all">All</button>
-                                <button data-filter="daily">Daily</button>
-                                <button data-filter="weekly">Weekly</button>
-                                <button data-filter="monthly">Monthly</button>
-                                <button data-filter="yearly">Yearly</button>
-                            </div>
-                        </div>
-                        <div class="quick-stats-row" style="width: 100%;">
-                            <div class="mini-stat-card">
-                                <span>Today</span>
-                                <strong>{{ stats_telemetria.diario }}</strong>
-                            </div>
-                            <div class="mini-stat-card">
-                                <span>This Week</span>
-                                <strong>{{ stats_telemetria.semanal }}</strong>
-                            </div>
-                            <div class="mini-stat-card">
-                                <span>This Month</span>
-                                <strong>{{ stats_telemetria.mensual }}</strong>
-                            </div>
-                            <div class="mini-stat-card">
-                                <span>This Year</span>
-                                <strong>{{ stats_telemetria.anual }}</strong>
-                            </div>
-                        </div>
-                    </div>
+                <div class="live-stream-box">
+                    <h3>Script Execution Stream <span class="live-badge">Live</span></h3>
                     <div class="table-container">
-                        <table class="modern-table">
+                        <table>
                             <thead>
                                 <tr>
-                                    <th>Target User</th>
-                                    <th>Universe ID</th>
-                                    <th>Origin IP</th>
-                                    <th>Timestamp</th>
+                                    <th>TARGET USER</th>
+                                    <th>UNIVERSE ID</th>
+                                    <th>ORIGIN IP</th>
+                                    <th>TIMESTAMP</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                {% for exe in ejecuciones %}
-                                <tr data-timestamp="{{ exe.timestamp.isoformat() }}">
-                                    <td style="color: #fff; font-weight: 500;">{{ exe.roblox_username }}</td>
-                                    <td class="mono-text" style="color: #aaa;">{{ exe.universe_id }}</td>
-                                    <td class="text-dim">{{ exe.ip_address }}</td>
-                                    <td class="text-dim">{{ exe.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <tbody id="stream-tbody">
+                                <tr class="empty-row">
+                                    <td colspan="4">Awaiting incoming connections...</td>
                                 </tr>
-                                {% else %}
-                                <tr>
-                                    <td colspan="4" style="text-align: center; color: #555; padding: 30px;">Awaiting incoming connections...</td>
-                                </tr>
-                                {% endfor %}
                             </tbody>
                         </table>
                     </div>
                 </div>
-
-                <div class="summary-section">
-                    <div class="section-header" style="flex-direction: column; align-items: flex-start; border-bottom: none; gap: 15px;">
-                        <div class="header-top">
-                            <div class="header-title-group">
-                                <h3>Authentication Audit</h3>
-                                <span class="badge badge-red">Security Threats</span>
-                            </div>
-                            <div class="time-filters">
-                                <button class="active" data-filter="all">All</button>
-                                <button data-filter="daily">Daily</button>
-                                <button data-filter="weekly">Weekly</button>
-                                <button data-filter="monthly">Monthly</button>
-                                <button data-filter="yearly">Yearly</button>
-                            </div>
-                        </div>
-                        <div class="quick-stats-row" style="width: 100%;">
-                            <div class="mini-stat-card failed-stat">
-                                <span>Failed (24H)</span>
-                                <strong class="{% if stats_seguridad.diario > 0 %}text-red{% endif %}">{{ stats_seguridad.diario }}</strong>
-                            </div>
-                            <div class="mini-stat-card failed-stat">
-                                <span>Failed (7D)</span>
-                                <strong class="{% if stats_seguridad.semanal > 0 %}text-red{% endif %}">{{ stats_seguridad.semanal }}</strong>
-                            </div>
-                            <div class="mini-stat-card failed-stat">
-                                <span>Failed (30D)</span>
-                                <strong class="{% if stats_seguridad.mensual > 0 %}text-red{% endif %}">{{ stats_seguridad.mensual }}</strong>
-                            </div>
-                            <div class="mini-stat-card failed-stat">
-                                <span>Failed (365D)</span>
-                                <strong class="{% if stats_seguridad.anual > 0 %}text-red{% endif %}">{{ stats_seguridad.anual }}</strong>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="table-container">
-                        <table class="modern-table">
-                            <thead>
-                                <tr>
-                                    <th>Attempted Login</th>
-                                    <th>Client IP</th>
-                                    <th>Authorization</th>
-                                    <th>Timestamp</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for log in seguridad %}
-                                <tr data-timestamp="{{ log.timestamp.isoformat() }}">
-                                    <td style="color: #fff;">{{ log.attempted_username }}</td>
-                                    <td class="text-dim">{{ log.ip_address }}</td>
-                                    <td>
-                                        <span class="{% if log.status == 'SUCCESS' %}status-success{% else %}status-failed{% endif %}">
-                                            {{ log.status }}
-                                        </span>
-                                    </td>
-                                    <td class="text-dim">{{ log.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
-                                </tr>
-                                {% else %}
-                                <tr>
-                                    <td colspan="4" style="text-align: center; color: #555; padding: 30px;">No access logs recorded.</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
             </section>
-        </section>
-    </main>
 
-</div>
+            <section id="scripts-view" class="dashboard-view">
+                <div class="section-header">
+                    <div>
+                        <h2>Scripts Manager</h2>
+                        <p>Despliega y sincroniza scripts con la base de datos.</p>
+                    </div>
+                    <button class="primary-btn" onclick="openScriptModal()">Nuevo Script</button>
+                </div>
+                <div class="scripts-grid" id="scripts-list">
+                </div>
+            </section>
 
-<script src="{{ url_for('static', filename='script.js') }}"></script>
-<script>
-    document.querySelectorAll('.time-filters').forEach(filterContainer => {
-        filterContainer.querySelectorAll('button').forEach(btn => {
-            btn.addEventListener('click', () => {
-                filterContainer.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                const timeframe = btn.getAttribute('data-filter');
-                const section = filterContainer.closest('.summary-section');
-                const tableBody = section.querySelector('.modern-table tbody');
-                if (!tableBody) return;
-                const rows = tableBody.querySelectorAll('tr');
-                const now = new Date();
-                let limitDate = new Date();
-                if (timeframe === 'daily') {
-                    limitDate.setHours(0, 0, 0, 0);
-                } else if (timeframe === 'weekly') {
-                    const day = limitDate.getDay();
-                    const diff = limitDate.getDate() - day + (day === 0 ? -6 : 1);
-                    limitDate = new Date(limitDate.setDate(diff));
-                    limitDate.setHours(0, 0, 0, 0);
-                } else if (timeframe === 'monthly') {
-                    limitDate.setDate(1);
-                    limitDate.setHours(0, 0, 0, 0);
-                } else if (timeframe === 'yearly') {
-                    limitDate.setMonth(0, 1);
-                    limitDate.setHours(0, 0, 0, 0);
-                } else {
-                    rows.forEach(r => r.style.display = '');
-                    return;
-                }
-                rows.forEach(row => {
-                    const rowTimeStr = row.getAttribute('data-timestamp');
-                    if (!rowTimeStr) return;
-                    const rowTime = new Date(rowTimeStr);
-                    if (rowTime >= limitDate) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-            });
-        });
-    });
-</script>
+            <section id="licenses-view" class="dashboard-view">
+                <div class="section-header">
+                    <div>
+                        <h2>Generador de Licencias</h2>
+                        <p>Emite llaves de acceso encriptadas para tus usuarios.</p>
+                    </div>
+                </div>
+                <div class="generator-panel">
+                    <div class="input-group">
+                        <label>Prefijo</label>
+                        <input type="text" id="license-prefix" placeholder="SH_">
+                    </div>
+                    <div class="input-group">
+                        <label>Duración</label>
+                        <select id="license-duration">
+                            <option value="24 Horas">24 Horas</option>
+                            <option value="7 Días">7 Días</option>
+                            <option value="30 Días">30 Días</option>
+                            <option value="De por Vida">De por Vida</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Límite de Usos</label>
+                        <input type="number" id="license-uses" value="1" min="1">
+                    </div>
+                    <button class="action-btn" onclick="generateLicenseKey()">Generar Licencia</button>
+                </div>
+                <div class="table-container margin-top">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>LICENCIA</th>
+                                <th>DURACIÓN</th>
+                                <th>USOS MÁXIMOS</th>
+                                <th>ESTADO</th>
+                                <th>ACCIONES</th>
+                            </tr>
+                        </thead>
+                        <tbody id="licenses-tbody">
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="files-view" class="dashboard-view">
+                <div class="section-header">
+                    <div>
+                        <h2>Gestor de Archivos</h2>
+                    </div>
+                </div>
+                <div class="drag-drop-zone" id="drop-zone">
+                    <svg class="upload-icon" viewBox="0 0 24 24" width="48" height="48">
+                        <path fill="currentColor" d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
+                    </svg>
+                    <p>Arrastra recursos adicionales aquí</p>
+                    <input type="file" id="file-uploader" class="hidden-uploader" multiple>
+                </div>
+                <div class="files-grid" id="files-list">
+                </div>
+            </section>
+
+            <section id="analytics-view" class="dashboard-view">
+            </section>
+
+            <section id="settings-view" class="dashboard-view">
+            </section>
+        </div>
+    </div>
+
+    <div class="modal" id="script-modal">
+        <div class="modal-content">
+            <h3>Deploy Script</h3>
+            <div class="input-group">
+                <label>Script ID</label>
+                <input type="text" id="modal-script-name" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label>Universe ID</label>
+                <input type="text" id="modal-script-universe" maxlength="15" pattern="\d*" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label>Source</label>
+                <textarea id="modal-script-code" class="code-editor"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="secondary-btn" onclick="closeScriptModal()">Cancelar</button>
+                <button class="primary-btn" onclick="saveScript()">Desplegar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
