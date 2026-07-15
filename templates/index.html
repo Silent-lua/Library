@@ -2,31 +2,402 @@
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>SilentHub</title>
+<meta charset="UTF-8">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>SilentHub Access</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
 </head>
+
 
 <body>
 
-<div class="container">
 
-    <h1>SilentHub</h1>
 
-    <p>
-        The server has been successfully connected.
-    </p>
+<canvas id="matrix"></canvas>
 
-    <a href="/panel">
-        <button>
-            Access
+
+<div class="background-glow"></div>
+
+
+
+
+
+<div class="login-box">
+
+
+
+    <div class="logo">
+
+
+        <h1>
+            SilentHub
+        </h1>
+
+
+        <p>
+            Личная панель управления
+        </p>
+
+
+    </div>
+
+
+
+
+
+
+    {% with messages = get_flashed_messages() %}
+
+        {% if messages %}
+
+        <div class="error">
+
+            {{ messages[0] }}
+
+        </div>
+
+        {% endif %}
+
+    {% endwith %}
+
+
+
+
+
+
+
+
+    <form method="POST" action="/login">
+
+
+
+        <input
+
+        type="text"
+
+        name="username"
+
+        placeholder="Username"
+
+        autocomplete="username"
+
+        required>
+
+
+
+
+
+
+
+        <input
+
+        type="password"
+
+        name="password"
+
+        placeholder="Password"
+
+        autocomplete="current-password"
+
+        required>
+
+
+
+
+
+
+
+
+        <button
+
+        class="access-btn"
+
+        type="submit">
+
+
+            ACCESS
+
+
         </button>
-    </a>
+
+
+
+
+
+    </form>
+
+
+
+
+
+
+
+    <div class="footer-text">
+
+
+        Защищенный шлюз SilentHub
+
+
+    </div>
+
+
+
+
 
 </div>
+
+
+
+
+
+
+
+
+
+<script>
+
+
+const canvas =
+document.getElementById("matrix");
+
+
+const ctx =
+canvas.getContext("2d");
+
+
+
+function resize(){
+
+
+    canvas.width =
+    window.innerWidth;
+
+
+    canvas.height =
+    window.innerHeight;
+
+
+}
+
+
+
+resize();
+
+
+
+window.addEventListener(
+"resize",
+resize
+);
+
+
+
+
+
+
+const characters =
+"01ABCDEFGHIJKLMNOPQRSTUVWXYZ#$%&@";
+
+
+
+const fontSize = 16;
+
+
+
+let columns =
+Math.floor(
+canvas.width / fontSize
+);
+
+
+
+let drops = [];
+
+
+
+
+
+function setup(){
+
+
+    columns =
+    Math.floor(
+    canvas.width / fontSize
+    );
+
+
+
+    drops = [];
+
+
+
+    for(
+        let i = 0;
+        i < columns;
+        i++
+    ){
+
+        drops[i] = 1;
+
+    }
+
+
+}
+
+
+
+setup();
+
+
+
+
+
+
+
+function draw(){
+
+
+
+    ctx.fillStyle =
+    "rgba(0,0,0,0.08)";
+
+
+
+    ctx.fillRect(
+
+        0,
+
+        0,
+
+        canvas.width,
+
+        canvas.height
+
+    );
+
+
+
+
+
+    ctx.fillStyle =
+    "#00ff88";
+
+
+
+    ctx.font =
+    fontSize + "px monospace";
+
+
+
+
+
+
+    for(
+        let i = 0;
+        i < drops.length;
+        i++
+    ){
+
+
+
+        const text =
+
+        characters[
+
+            Math.floor(
+
+                Math.random()
+
+                *
+
+                characters.length
+
+            )
+
+        ];
+
+
+
+
+
+        ctx.fillText(
+
+            text,
+
+            i * fontSize,
+
+            drops[i] * fontSize
+
+        );
+
+
+
+
+
+
+
+        if(
+
+            drops[i] * fontSize >
+
+            canvas.height
+
+            &&
+
+            Math.random() >
+
+            0.975
+
+        ){
+
+
+            drops[i] = 0;
+
+
+        }
+
+
+
+
+
+
+        drops[i]++;
+
+
+
+    }
+
+
+
+
+
+}
+
+
+
+
+
+
+setInterval(
+
+draw,
+
+40
+
+);
+
+
+
+</script>
+
+
+
+
 
 </body>
 
