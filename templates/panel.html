@@ -55,6 +55,11 @@
             color: #ffa500;
             border-color: rgba(255, 165, 0, 0.2);
         }
+        .badge-blue {
+            background: rgba(0, 162, 255, 0.1);
+            color: #00a2ff;
+            border-color: rgba(0, 162, 255, 0.2);
+        }
         
         .table-container {
             background: var(--card, #121212);
@@ -377,7 +382,7 @@
                   {% if messages %}
                     <div class="flash-container">
                       {% for msg in messages %}
-                        <div class="flash-message">{{ msg }}</div>
+                        <div class="flash-message" style="background: rgba(0, 255, 136, 0.05); border: 1px solid #00ff88; color: #00ff88;">{{ msg }}</div>
                       {% endfor %}
                     </div>
                   {% endif %}
@@ -399,6 +404,23 @@
                     <div class="status-card">
                         <span class="status-label">Admin Identity</span>
                         <strong class="status-value">admin</strong>
+                    </div>
+                </div>
+
+                <div class="license-layout-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 30px;">
+                    <div class="form-container">
+                        <h4>📤 Export Database Backup</h4>
+                        <p style="color: #777; font-size: 0.8rem; margin-bottom: 15px; line-height: 1.4;">Descarga un archivo JSON cifrado con todo el inventario de licencias y whitelists para proteger la infraestructura ante reinicios del servidor.</p>
+                        <a href="/dashboard/exportar" class="btn-submit" style="display: block; text-align: center; text-decoration: none;">Download JSON</a>
+                    </div>
+                    
+                    <div class="form-container">
+                        <h4>📥 Restore Database Backup</h4>
+                        <p style="color: #777; font-size: 0.8rem; margin-bottom: 15px; line-height: 1.4;">Sube un archivo de respaldo JSON generado previamente para reinyectar todas las llaves a la base de datos de manera automática.</p>
+                        <form action="/dashboard/importar" method="POST" enctype="multipart/form-data" style="display: flex; gap: 10px;">
+                            <input type="file" name="file_respaldo" accept=".json" required class="form-control" style="flex: 1; padding: 7px;">
+                            <button type="submit" class="btn-submit" style="width: auto; padding: 0 15px;">Upload</button>
+                        </form>
                     </div>
                 </div>
 
@@ -462,10 +484,6 @@
                         <h4>Generate License</h4>
                         <form action="/licencias/crear" method="POST">
                             <div class="form-group">
-                                <label for="clave">Llave / Usuario Whitelist</label>
-                                <input type="text" id="clave" name="clave" class="form-control" placeholder="Dejar vacio para generar Key">
-                            </div>
-                            <div class="form-group">
                                 <label for="tipo">Estructura Acceso</label>
                                 <select id="tipo" name="tipo" class="form-control">
                                     <option value="KeySystem">KeySystem</option>
@@ -481,8 +499,55 @@
                                     <option value="Permanent">Permanent</option>
                                 </select>
                             </div>
+                            <div class="form-group">
+                                <label for="clave">Formato de Entrada</label>
+                                <input type="text" id="clave" name="clave" class="form-control" placeholder="Ej: 10/1 o 10/AllForOne" required>
+                                <div style="font-size: 0.7rem; color: #777; margin-top: 8px; line-height: 1.5;">
+                                    <span style="color: #ffa500; font-weight: bold;">[KeySystem]:</span> Duración/Cantidad (Ej. <b>10/1</b>)<br>
+                                    <span style="color: #b366ff; font-weight: bold;">[Whitelist]:</span> Duración/Usuario (Ej. <b>10/AllForOne</b>)
+                                </div>
+                            </div>
                             <button type="submit" class="btn-submit">Generate Access</button>
                         </form>
+                    </div>
+                </div>
+
+                <div class="summary-section">
+                    <div class="section-header">
+                        <h3>Live Execution Summary</h3>
+                        <span class="badge badge-blue">Resumen Global</span>
+                    </div>
+                    <div class="table-container">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Usuario Target</th>
+                                    <th>Ubicación</th>
+                                    <th>Dispositivo</th>
+                                    <th>Estado Inyección</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for exe in ejecuciones %}
+                                <tr>
+                                    <td style="color: #fff; font-weight: 500;">{{ exe.roblox_username }}</td>
+                                    <td class="text-dim">Global / Proxy</td>
+                                    <td class="text-dim">Resumido</td>
+                                    <td>
+                                        {% if exe.universe_id == "0000000000" or not exe.universe_id %}
+                                            <span class="status-failed">FALLO</span>
+                                        {% else %}
+                                            <span class="status-success">ONLINE</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" style="text-align: center; color: #555; padding: 30px;">Awaiting incoming connections...</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -490,8 +555,8 @@
                     <div class="section-header" style="flex-direction: column; align-items: flex-start; border-bottom: none; gap: 15px;">
                         <div class="header-top">
                             <div class="header-title-group">
-                                <h3>Script Execution Stream</h3>
-                                <span class="badge badge-green">Live Monitoring</span>
+                                <h3>Advanced Script Telemetry</h3>
+                                <span class="badge badge-green">Deep Analysis</span>
                             </div>
                             <div class="time-filters">
                                 <button class="active" data-filter="all">All</button>
