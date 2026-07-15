@@ -7,184 +7,188 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>SilentHub Panel</title>
+<title>SilentHub settings</title>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
 </head>
 
 
-<body class="panel-body">
+<body class="dashboard-body">
+
+
+<div class="dashboard-layout">
 
 
 
-<div class="panel-container">
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
 
 
-    <header class="panel-header">
-
-
-        <div>
+        <div class="sidebar-logo">
 
             <h1>
                 SilentHub
             </h1>
 
-
-            <p>
-                Restricted access
-            </p>
-
-        </div>
-
-
-
-        <a href="/logout" class="logout-btn">
-
-            LOGOUT
-
-        </a>
-
-
-    </header>
-
-
-
-
-    <section class="welcome-card">
-
-
-        <h2>
-
-            Welcome,
-            {{ datos.usuario }}
-
-        </h2>
-
-
-        <p>
-
-            Sistema protegido correctamente.
-
-        </p>
-
-
-    </section>
-
-
-
-
-
-    <div class="cards">
-
-
-
-        <div class="dashboard-card">
-
-
-            <h3>
-                Estado
-            </h3>
-
-
-            <span class="online">
-
-                ● {{ datos.estado }}
-
+            <span>
+                CONTROL PANEL
             </span>
 
-
         </div>
 
 
 
+        <nav class="menu">
 
 
-        <div class="dashboard-card">
+            <a href="#" class="active">
+
+                🏠 Overview
+
+            </a>
 
 
-            <h3>
-                Versión
-            </h3>
+            <a href="#">
+
+                📜 Scripts
+
+            </a>
+
+
+            <a href="#">
+
+                🔑 Licenses
+
+            </a>
+
+
+            <a href="#">
+
+                📊 Logs
+
+            </a>
+
+
+            <a href="#">
+
+                ⚙ Settings
+
+            </a>
+
+
+        </nav>
+
+
+
+        <div class="user-box">
 
 
             <p>
-
-                {{ datos.version }}
-
+                Logged as
             </p>
 
 
-        </div>
+            <strong>
 
+                {{ datos.usuario }}
 
-
-
-
-        <div class="dashboard-card">
-
-
-            <h3>
-                Tiempo activo
-            </h3>
-
-
-            <p>
-
-                {{ datos.tiempo }}
-
-            </p>
+            </strong>
 
 
         </div>
 
 
 
-
-    </div>
-
+    </aside>
 
 
 
 
-    <section class="modules">
 
+    <!-- MAIN -->
 
-        <h2>
-
-            Modules
-
-        </h2>
+    <main class="dashboard-main">
 
 
 
-        <div class="module-grid">
+        <header class="topbar">
 
 
-            <div class="module-card">
+            <div>
 
-                <h3>
-                    📜 Scripts
-                </h3>
+
+                <h2>
+                    усилия, процветание и дисциплина 
+                </h2>
+
 
                 <p>
-                    Script management system.
+                    Welcome to SilentHub
                 </p>
+
+
+            </div>
+
+
+
+            <a href="/logout" class="logout-btn">
+
+                LOGOUT
+
+            </a>
+
+
+
+        </header>
+
+
+
+
+
+        <!-- STATS -->
+
+
+        <section class="stats">
+
+
+
+            <div class="stat-card">
+
+
+                <span>
+                    Server
+                </span>
+
+
+                <h3 class="online">
+
+                    ● {{ datos.estado }}
+
+                </h3>
+
 
             </div>
 
 
 
 
-            <div class="module-card">
+
+            <div class="stat-card">
+
+
+                <span>
+                    Version
+                </span>
+
 
                 <h3>
-                    🔑 Licenses
+
+                    {{ datos.version }}
+
                 </h3>
 
-                <p>
-                    License management.
-                </p>
 
             </div>
 
@@ -192,41 +196,154 @@
 
 
 
-            <div class="module-card">
+            <div class="stat-card">
+
+
+                <span>
+                    Uptime
+                </span>
+
 
                 <h3>
-                    📊 Logs
+
+                    {{ datos.tiempo }}
+
                 </h3>
 
-                <p>
-                    Security activity.
-                </p>
 
             </div>
 
 
 
+        </section>
 
-            <div class="module-card">
 
-                <h3>
-                    ⚙️ Settings
-                </h3>
 
-                <p>
-                    System configuration.
-                </p>
+
+
+        <!-- CONTENT -->
+
+
+        <section class="content-panel">
+
+
+
+            <h2>
+
+                System Modules
+
+            </h2>
+
+
+
+            <div class="modules-grid">
+
+
+
+                <div class="module-box">
+
+
+                    <div class="icon">
+                        📜
+                    </div>
+
+
+                    <h3>
+                        Scripts
+                    </h3>
+
+
+                    <p>
+                        Settings scripts.
+                    </p>
+
+
+                </div>
+
+
+
+
+
+                <div class="module-box">
+
+
+                    <div class="icon">
+                        🔑
+                    </div>
+
+
+                    <h3>
+                        Licenses
+                    </h3>
+
+
+                    <p>
+                        Settings keys.
+                    </p>
+
+
+                </div>
+
+
+
+
+
+                <div class="module-box">
+
+
+                    <div class="icon">
+                        📊
+                    </div>
+
+
+                    <h3>
+                        Security Logs
+                    </h3>
+
+
+                    <p>
+                        Monitor system activity.
+                    </p>
+
+
+                </div>
+
+
+
+
+
+                <div class="module-box">
+
+
+                    <div class="icon">
+                        ⚙️
+                    </div>
+
+
+                    <h3>
+                        Configuration
+                    </h3>
+
+
+                    <p>
+                        SilentHub settings.
+                    </p>
+
+
+                </div>
+
+
 
             </div>
 
 
 
-        </div>
+        </section>
 
 
-    </section>
 
 
+    </main>
 
 
 
