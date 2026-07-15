@@ -1,171 +1,270 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SilentHub</title>
+
+    <title>SilentHub Dashboard</title>
+
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
 </head>
-<body>
-    <div class="sidebar">
-        <div class="sidebar-item active" data-target="overview">Overview</div>
-        <div class="sidebar-item" data-target="scripts">Scripts</div>
-        <div class="sidebar-item" data-target="licenses">Licenses</div>
-        <div class="sidebar-item" data-target="files">Files</div>
-        <div class="sidebar-item" data-target="analytics">Analytics</div>
-        <div class="sidebar-item" data-target="settings">Settings</div>
-    </div>
 
-    <div class="main-content">
-        <div class="panel-container">
-            <section id="overview-view" class="dashboard-view active-view">
-                <div class="metrics-grid">
-                    <div class="metric-card">
-                        <span class="metric-title">Estado de Red</span>
-                        <div class="metric-value-container">
-                            <span class="status-indicator active-status"></span>
-                            <span class="metric-value">Secure Relay</span>
-                        </div>
-                    </div>
-                    <div class="metric-card">
-                        <span class="metric-title">Entorno</span>
-                        <span class="metric-value">Producción</span>
-                    </div>
-                    <div class="metric-card">
-                        <span class="metric-title">Tiempo de Actividad</span>
-                        <span id="uptime-display" class="metric-value">0d 0h 7m</span>
-                    </div>
-                    <div class="metric-card">
-                        <span class="metric-title">Identidad Admin</span>
-                        <span class="metric-value">admin</span>
-                    </div>
+<body class="dashboard-body">
+
+<div class="dashboard-layout">
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar" id="sidebar">
+
+        <div>
+
+            <div class="sidebar-header">
+
+                <div class="sidebar-logo">
+                    SilentHub
                 </div>
 
-                <div class="live-stream-box">
-                    <h3>Script Execution Stream <span class="live-badge">Live</span></h3>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>TARGET USER</th>
-                                    <th>UNIVERSE ID</th>
-                                    <th>ORIGIN IP</th>
-                                    <th>TIMESTAMP</th>
-                                </tr>
-                            </thead>
-                            <tbody id="stream-tbody">
-                                <tr class="empty-row">
-                                    <td colspan="4">Awaiting incoming connections...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="sidebar-subtitle">
+                    PRIVATE PANEL
                 </div>
-            </section>
 
-            <section id="scripts-view" class="dashboard-view">
-                <div class="section-header">
-                    <div>
-                        <h2>Scripts Manager</h2>
-                        <p>Despliega y sincroniza scripts con la base de datos.</p>
-                    </div>
-                    <button class="primary-btn" onclick="openScriptModal()">Nuevo Script</button>
-                </div>
-                <div class="scripts-grid" id="scripts-list">
-                </div>
-            </section>
+            </div>
 
-            <section id="licenses-view" class="dashboard-view">
-                <div class="section-header">
-                    <div>
-                        <h2>Generador de Licencias</h2>
-                        <p>Emite llaves de acceso encriptadas para tus usuarios.</p>
-                    </div>
-                </div>
-                <div class="generator-panel">
-                    <div class="input-group">
-                        <label>Prefijo</label>
-                        <input type="text" id="license-prefix" placeholder="SH_">
-                    </div>
-                    <div class="input-group">
-                        <label>Duración</label>
-                        <select id="license-duration">
-                            <option value="24 Horas">24 Horas</option>
-                            <option value="7 Días">7 Días</option>
-                            <option value="30 Días">30 Días</option>
-                            <option value="De por Vida">De por Vida</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>Límite de Usos</label>
-                        <input type="number" id="license-uses" value="1" min="1">
-                    </div>
-                    <button class="action-btn" onclick="generateLicenseKey()">Generar Licencia</button>
-                </div>
-                <div class="table-container margin-top">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>LICENCIA</th>
-                                <th>DURACIÓN</th>
-                                <th>USOS MÁXIMOS</th>
-                                <th>ESTADO</th>
-                                <th>ACCIONES</th>
-                            </tr>
-                        </thead>
-                        <tbody id="licenses-tbody">
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+            <nav class="menu">
 
-            <section id="files-view" class="dashboard-view">
-                <div class="section-header">
-                    <div>
-                        <h2>Gestor de Archivos</h2>
-                    </div>
-                </div>
-                <div class="drag-drop-zone" id="drop-zone">
-                    <svg class="upload-icon" viewBox="0 0 24 24" width="48" height="48">
-                        <path fill="currentColor" d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/>
-                    </svg>
-                    <p>Arrastra recursos adicionales aquí</p>
-                    <input type="file" id="file-uploader" class="hidden-uploader" multiple>
-                </div>
-                <div class="files-grid" id="files-list">
-                </div>
-            </section>
+                <a class="active" href="#">
+                    🏠
+                    <span>Overview</span>
+                </a>
 
-            <section id="analytics-view" class="dashboard-view">
-            </section>
+                <a href="#">
+                    📜
+                    <span>Scripts</span>
+                </a>
 
-            <section id="settings-view" class="dashboard-view">
-            </section>
+                <a href="#">
+                    🔑
+                    <span>Licenses</span>
+                </a>
+
+                <a href="#">
+                    📂
+                    <span>Files</span>
+                </a>
+
+                <a href="#">
+                    📊
+                    <span>Analytics</span>
+                </a>
+
+                <a href="#">
+                    ⚙
+                    <span>Settings</span>
+                </a>
+
+            </nav>
+
         </div>
-    </div>
 
-    <div class="modal" id="script-modal">
-        <div class="modal-content">
-            <h3>Deploy Script</h3>
-            <div class="input-group">
-                <label>Script ID</label>
-                <input type="text" id="modal-script-name" autocomplete="off">
-            </div>
-            <div class="input-group">
-                <label>Universe ID</label>
-                <input type="text" id="modal-script-universe" maxlength="15" pattern="\d*" autocomplete="off">
-            </div>
-            <div class="input-group">
-                <label>Source</label>
-                <textarea id="modal-script-code" class="code-editor"></textarea>
-            </div>
-            <div class="modal-actions">
-                <button class="secondary-btn" onclick="closeScriptModal()">Cancelar</button>
-                <button class="primary-btn" onclick="saveScript()">Desplegar</button>
-            </div>
+        <div class="user-box">
+
+            <p>Logged as</p>
+
+            <strong>{{ datos.usuario }}</strong>
+
         </div>
-    </div>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    </aside>
+
+    <!-- Overlay -->
+
+    <div class="sidebar-overlay" id="overlay"></div>
+
+    <!-- MAIN -->
+
+    <main class="dashboard-main">
+
+        <header class="topbar">
+
+            <div class="topbar-left">
+
+                <button class="menu-toggle" id="menuToggle">
+
+                    ☰
+
+                </button>
+
+                <div>
+
+                    <h2>SilentHub</h2>
+
+                    <p>Private Control Panel</p>
+
+                </div>
+
+            </div>
+
+            <a href="/logout" class="logout-btn">
+
+                LOGOUT
+
+            </a>
+
+        </header>
+
+        <section class="content">
+
+            <div class="stats">
+
+                <div class="stat-card">
+
+                    <span>Server Status</span>
+
+                    <h3 class="online">
+
+                        ● {{ datos.estado }}
+
+                    </h3>
+
+                </div>
+
+                <div class="stat-card">
+
+                    <span>Version</span>
+
+                    <h3>
+
+                        {{ datos.version }}
+
+                    </h3>
+
+                </div>
+
+                <div class="stat-card">
+
+                    <span>Uptime</span>
+
+                    <h3>
+
+                        {{ datos.tiempo }}
+
+                    </h3>
+
+                </div>
+
+                <div class="stat-card">
+
+                    <span>User</span>
+
+                    <h3>
+
+                        {{ datos.usuario }}
+
+                    </h3>
+
+                </div>
+
+            </div>
+
+            <section class="content-panel">
+
+                <h2>
+
+                    Modules
+
+                </h2>
+
+                <div class="modules-grid">
+
+                    <div class="module-box">
+
+                        <div class="icon">📜</div>
+
+                        <h3>Scripts</h3>
+
+                        <p>
+                            Upload, edit and manage all Lua scripts from one place.
+                        </p>
+
+                    </div>
+
+                    <div class="module-box">
+
+                        <div class="icon">🔑</div>
+
+                        <h3>Licenses</h3>
+
+                        <p>
+                            Generate, revoke and monitor license keys.
+                        </p>
+
+                    </div>
+
+                    <div class="module-box">
+
+                        <div class="icon">📂</div>
+
+                        <h3>File Manager</h3>
+
+                        <p>
+                            Browse and organize every uploaded resource.
+                        </p>
+
+                    </div>
+
+                    <div class="module-box">
+
+                        <div class="icon">📊</div>
+
+                        <h3>Analytics</h3>
+
+                        <p>
+                            View usage statistics and server activity.
+                        </p>
+
+                    </div>
+
+                    <div class="module-box">
+
+                        <div class="icon">🛡</div>
+
+                        <h3>Security</h3>
+
+                        <p>
+                            Review authentication attempts and security events.
+                        </p>
+
+                    </div>
+
+                    <div class="module-box">
+
+                        <div class="icon">⚙</div>
+
+                        <h3>Settings</h3>
+
+                        <p>
+                            Configure SilentHub and customize your panel.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </section>
+
+    </main>
+
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
 </body>
+
 </html>
