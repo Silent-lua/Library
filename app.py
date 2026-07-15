@@ -1,123 +1,206 @@
-from flask import Flask, render_template, request, jsonify
-import sqlite3
-import random
-import string
+from flask import Flask, render_template, redirect, url_for, request, flash
+from flask_login import (
+    LoginManager,
+    UserMixin,
+    login_user,
+    logout_user,
+    login_required,
+    current_user
+)
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime, timedelta
+import os
+import hashlib
+
 
 app = Flask(__name__)
 
-def get_db_connection():
-    conn = sqlite3.connect('database.db')
-    conn.row_factory = sqlite3.Row
-    return conn
 
-def init_db():
-    conn = get_db_connection()
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS scripts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            universe_id TEXT NOT NULL,
-            code TEXT NOT NULL,
-            active INTEGER DEFAULT 1
-        )
-    ''')
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS licenses (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            key_string TEXT NOT NULL UNIQUE,
-            duration TEXT NOT NULL,
-            max_uses INTEGER NOT NULL,
-            status TEXT DEFAULT 'Active'
-        )
-    ''')
-    conn.commit()
-    conn.close()
+# ==================================================
+# CONFIGURACIÓN
+# ==================================================
 
-init_db()
+app.secret_key = os.environ.get(
+    "SECRET_KEY",
+    "silenthub-change-this-secret"
+)
 
-@app.route('/')
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///silenthub.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+app.config["REMEMBER_COOKIE_DURATION"] = timedelta(days=30)
+app.config["REMEMBER_COOKIE_HTTPONLY"] = True
+app.config["REMEMBER_COOKIE_SECURE"] = False
+
+
+inicio_servidor = datetime.now()
+db = SQLAlchemy(app)
+
+
+# ==================================================
+# MODELOS DE BASE DE DATOS
+# ==================================================
+
+class Usuario(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
+
+class RegistroSeguridad(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    ip_address = db.Column(db.String(50))
+    user_agent = db.Column(db.String(255))
+    attempted_username = db.Column(db.String(50))
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    status = db.Column(db.String(20))
+
+class EjecucionScript(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    roblox_username = db.Column(db.String(50))
+    universe_id = db.Column(db.String(15))
+    ip_address = db.Column(db.String(50))
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+# ==================================================
+# LOGIN SYSTEM
+# ==================================================
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
+
+@login_manager.user_loader
+def load_user(user_id):
+    return Usuario.query.get(int(user_id))
+
+def inicializar_sistema():
+    if not Usuario.query.filter_by(username="admin").first():
+        hash_pass = hashlib.sha256("admin123".encode()).hexdigest()
+        admin = Usuario(username="admin", password_hash=hash_pass)
+        db.session.add(admin)
+        db.session.commit()
+        
+    # Crear carpeta para alojar los scripts de Lua si no existe
+    if not os.path.exists('scripts'):
+        os.makedirs('scripts')
+
+with app.app_context():
+    db.create_all()
+    inicializar_sistema()
+
+
+# ==================================================
+# RUTAS DE INTERFAZ (UI)
+# ==================================================
+
+@app.route('/', methods=['GET'])
 def index():
-    return render_template('panel.html')
+    return redirect(url_for('login'))
 
-@app.route('/api/scripts', methods=['GET'])
-def get_scripts():
-    conn = get_db_connection()
-    scripts = conn.execute('SELECT * FROM scripts').fetchall()
-    conn.close()
-    return jsonify([dict(ix) for ix in scripts])
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('panel'))
 
-@app.route('/api/scripts', methods=['POST'])
-def add_script():
-    data = request.get_json()
-    name = data.get('name')
-    universe_id = data.get('universe_id')
-    code = data.get('code')
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        ip_address = request.remote_addr
+        user_agent = request.user_agent.string
+        
+        user = Usuario.query.filter_by(username=username).first()
+        pass_hash = hashlib.sha256(password.encode()).hexdigest() if password else ""
+
+        if user and user.password_hash == pass_hash:
+            login_user(user, remember=True)
+            
+            log = RegistroSeguridad(
+                ip_address=ip_address, 
+                user_agent=user_agent, 
+                attempted_username=username, 
+                status="SUCCESS"
+            )
+            db.session.add(log)
+            db.session.commit()
+            
+            return redirect(url_for('panel'))
+        else:
+            log = RegistroSeguridad(
+                ip_address=ip_address, 
+                user_agent=user_agent, 
+                attempted_username=username, 
+                status="FAILED"
+            )
+            db.session.add(log)
+            db.session.commit()
+            
+            flash("ACCESO DENEGADO - CREDENCIALES INVÁLIDAS")
+
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+@app.route('/panel')
+@login_required
+def panel():
+    tiempo_activo = datetime.now() - inicio_servidor
+    horas, rem = divmod(tiempo_activo.seconds, 3600)
+    minutos, _ = divmod(rem, 60)
+    uptime_str = f"{tiempo_activo.days}d {horas}h {minutos}m"
+
+    datos_servidor = {
+        "estado": "En línea",
+        "version": "SilentHub v2.0",
+        "tiempo": uptime_str,
+        "usuario": current_user.username
+    }
     
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute(
-        'INSERT INTO scripts (name, universe_id, code, active) VALUES (?, ?, ?, ?)',
-        (name, universe_id, code, 1)
+    # Consultas a la base de datos para mostrar en la interfaz
+    ejecuciones_recientes = EjecucionScript.query.order_by(EjecucionScript.timestamp.desc()).limit(5).all()
+    registros_seguridad = RegistroSeguridad.query.order_by(RegistroSeguridad.timestamp.desc()).limit(5).all()
+    
+    return render_template(
+        'panel.html', 
+        datos=datos_servidor, 
+        ejecuciones=ejecuciones_recientes, 
+        seguridad=registros_seguridad
     )
-    conn.commit()
-    script_id = cursor.lastrowid
-    conn.close()
+
+
+# ==================================================
+# API DE TELEMETRÍA (CONEXIÓN LUA)
+# ==================================================
+
+@app.route('/api/load', methods=['GET'])
+def load_script():
+    uid = request.args.get('uid')
+    user = request.args.get('user')
+    ip_address = request.remote_addr
     
-    return jsonify({"id": script_id, "name": name, "universe_id": universe_id, "active": 1}), 201
-
-@app.route('/api/scripts/<int:id>', methods=['DELETE'])
-def delete_script(id):
-    conn = get_db_connection()
-    conn.execute('DELETE FROM scripts WHERE id = ?', (id,))
-    conn.commit()
-    conn.close()
-    return jsonify({"success": True})
-
-@app.route('/api/scripts/<int:id>/toggle', methods=['PUT'])
-def toggle_script(id):
-    data = request.get_json()
-    active = 1 if data.get('active') else 0
-    conn = get_db_connection()
-    conn.execute('UPDATE scripts SET active = ? WHERE id = ?', (active, id))
-    conn.commit()
-    conn.close()
-    return jsonify({"success": True})
-
-@app.route('/api/licenses', methods=['GET'])
-def get_licenses():
-    conn = get_db_connection()
-    licenses = conn.execute('SELECT * FROM licenses').fetchall()
-    conn.close()
-    return jsonify([dict(ix) for ix in licenses])
-
-@app.route('/api/licenses', methods=['POST'])
-def generate_license():
-    data = request.get_json()
-    prefix = data.get('prefix', 'SH_')
-    duration = data.get('duration')
-    max_uses = data.get('max_uses')
+    if uid and user:
+        nueva_ejecucion = EjecucionScript(
+            roblox_username=user,
+            universe_id=uid,
+            ip_address=ip_address
+        )
+        db.session.add(nueva_ejecucion)
+        db.session.commit()
+        
+    ruta_script = os.path.join(os.path.dirname(__file__), 'scripts', 'main.lua')
     
-    random_part = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
-    key = f"{prefix}{random_part}"
-    
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute(
-        'INSERT INTO licenses (key_string, duration, max_uses, status) VALUES (?, ?, ?, ?)',
-        (key, duration, max_uses, 'Active')
-    )
-    conn.commit()
-    conn.close()
-    
-    return jsonify({"key": key, "duration": duration, "max_uses": max_uses, "status": "Active"}), 201
+    if os.path.exists(ruta_script):
+        with open(ruta_script, 'r', encoding='utf-8') as archivo:
+            codigo_lua = archivo.read()
+        return codigo_lua, 200, {'Content-Type': 'text/plain'}
+    else:
+        return 'print("SilentHub: El archivo main.lua no se encuentra en el servidor.")', 404
 
-@app.route('/api/licenses/<int:id>/revoke', methods=['PUT'])
-def revoke_license(id):
-    conn = get_db_connection()
-    conn.execute('UPDATE licenses SET status = ? WHERE id = ?', ('Revoked', id))
-    conn.commit()
-    conn.close()
-    return jsonify({"success": True})
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000)
