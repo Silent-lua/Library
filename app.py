@@ -75,12 +75,15 @@ def load_user(user_id):
     return Usuario.query.get(int(user_id))
 
 def inicializar_sistema():
-    # Crea un usuario administrador por defecto si la tabla está vacía
     if not Usuario.query.filter_by(username="admin").first():
         hash_pass = hashlib.sha256("admin123".encode()).hexdigest()
         admin = Usuario(username="admin", password_hash=hash_pass)
         db.session.add(admin)
         db.session.commit()
+        
+    # Crear carpeta para alojar los scripts de Lua si no existe
+    if not os.path.exists('scripts'):
+        os.makedirs('scripts')
 
 with app.app_context():
     db.create_all()
@@ -133,7 +136,7 @@ def login():
             db.session.add(log)
             db.session.commit()
             
-            flash("ACCESO DENEGADO")
+            flash("ACCESO DENEGADO - CREDENCIALES INVÁLIDAS")
 
     return render_template('login.html')
 
@@ -146,21 +149,28 @@ def logout():
 @app.route('/panel')
 @login_required
 def panel():
-    # Cálculo dinámico del Uptime para renderizar en tu HTML
     tiempo_activo = datetime.now() - inicio_servidor
     horas, rem = divmod(tiempo_activo.seconds, 3600)
     minutos, _ = divmod(rem, 60)
     uptime_str = f"{tiempo_activo.days}d {horas}h {minutos}m"
 
-    # Diccionario exacto que espera tu panel.html
     datos_servidor = {
         "estado": "En línea",
-        "version": "SilentHub",
+        "version": "SilentHub v2.0",
         "tiempo": uptime_str,
         "usuario": current_user.username
     }
     
-    return render_template('panel.html', datos=datos_servidor)
+    # Consultas a la base de datos para mostrar en la interfaz
+    ejecuciones_recientes = EjecucionScript.query.order_by(EjecucionScript.timestamp.desc()).limit(5).all()
+    registros_seguridad = RegistroSeguridad.query.order_by(RegistroSeguridad.timestamp.desc()).limit(5).all()
+    
+    return render_template(
+        'panel.html', 
+        datos=datos_servidor, 
+        ejecuciones=ejecuciones_recientes, 
+        seguridad=registros_seguridad
+    )
 
 
 # ==================================================
@@ -182,9 +192,14 @@ def load_script():
         db.session.add(nueva_ejecucion)
         db.session.commit()
         
-    codigo_respuesta = 'print("SilentHub Conectado. Ejecutando...")'
+    ruta_script = os.path.join(os.path.dirname(__file__), 'scripts', 'main.lua')
     
-    return codigo_respuesta, 200, {'Content-Type': 'text/plain'}
+    if os.path.exists(ruta_script):
+        with open(ruta_script, 'r', encoding='utf-8') as archivo:
+            codigo_lua = archivo.read()
+        return codigo_lua, 200, {'Content-Type': 'text/plain'}
+    else:
+        return 'print("SilentHub: El archivo main.lua no se encuentra en el servidor.")', 404
 
 
 if __name__ == '__main__':
