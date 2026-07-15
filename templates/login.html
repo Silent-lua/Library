@@ -24,21 +24,24 @@
 
 
 
+
 <div class="login-box">
 
 
     <div class="logo">
 
-
-        <h1>SilentHub</h1>
+        <h1>
+            SilentHub
+        </h1>
 
 
         <p>
             Личная панель управления
         </p>
 
-
     </div>
+
+
 
 
 
@@ -46,11 +49,11 @@
 
         {% if messages %}
 
-            <div class="error">
+        <div class="error">
 
-                {{ messages[0] }}
+            {{ messages[0] }}
 
-            </div>
+        </div>
 
         {% endif %}
 
@@ -58,40 +61,37 @@
 
 
 
+
+
+
+
     <form method="POST" action="/login">
 
 
-
         <input
-
         type="text"
-
         name="username"
-
         placeholder="Username"
-
         autocomplete="username"
-
         required>
+
 
 
 
         <input
-
         type="password"
-
         name="password"
-
         placeholder="Password"
-
         autocomplete="current-password"
-
         required>
 
 
 
 
-        <button class="access-btn" type="submit">
+
+        <button
+        class="access-btn"
+        type="submit">
 
             ACCESS
 
@@ -103,11 +103,17 @@
 
 
 
+
+
+
+
     <div class="footer-text">
 
         Защищенный шлюз SilentHub
 
     </div>
+
+
 
 
 
@@ -117,33 +123,28 @@
 
 
 
+
+
+
+
 <script>
 
+const canvas = document.getElementById("matrix");
 
-const canvas =
-document.getElementById("matrix");
-
-
-const ctx =
-canvas.getContext("2d");
+const ctx = canvas.getContext("2d");
 
 
 
 function resize(){
 
-    canvas.width =
-    window.innerWidth;
+    canvas.width = window.innerWidth;
 
-
-    canvas.height =
-    window.innerHeight;
+    canvas.height = window.innerHeight;
 
 }
 
 
-
 resize();
-
 
 
 window.addEventListener(
@@ -153,28 +154,26 @@ resize
 
 
 
+
 const characters =
 "01ABCDEFGHIJKLMNOPQRSTUVWXYZ#$%&@";
-
 
 const fontSize = 16;
 
 
-let columns =
-Math.floor(
-canvas.width / fontSize
-);
+let columns;
+
+let drops;
 
 
-
-let drops = [];
 
 
 function setup(){
 
+
     columns =
     Math.floor(
-    canvas.width / fontSize
+        canvas.width / fontSize
     );
 
 
@@ -191,11 +190,14 @@ function setup(){
 
     }
 
+
 }
 
 
 
 setup();
+
+
 
 
 
@@ -224,6 +226,8 @@ function draw(){
 
 
 
+
+
     for(
         let i = 0;
         i < drops.length;
@@ -231,40 +235,29 @@ function draw(){
     ){
 
 
-        const text =
+        let text =
         characters[
             Math.floor(
-            Math.random()
-            *
-            characters.length
+                Math.random()
+                *
+                characters.length
             )
         ];
 
 
 
         ctx.fillText(
-
             text,
-
             i * fontSize,
-
             drops[i] * fontSize
-
         );
 
 
 
         if(
-
-            drops[i] * fontSize
-            >
-            canvas.height
-
+            drops[i] * fontSize > canvas.height
             &&
-            Math.random()
-            >
-            0.975
-
+            Math.random() > 0.975
         ){
 
             drops[i] = 0;
@@ -272,8 +265,8 @@ function draw(){
         }
 
 
-
         drops[i]++;
+
 
     }
 
@@ -290,6 +283,7 @@ draw,
 
 
 </script>
+
 
 
 
