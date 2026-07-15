@@ -4,66 +4,234 @@
 <head>
 
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>SilentHub Dashboard</title>
+<title>SilentHub Panel</title>
 
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
 </head>
 
 
-<body>
+<body class="panel-body">
 
 
-<div class="container">
+
+<div class="panel-container">
 
 
-<h1>SilentHub</h1>
-
-<p>
-Dashboard
-</p>
+    <header class="panel-header">
 
 
-<div class="card">
+        <div>
 
-<h2>Estado</h2>
+            <h1>
+                SilentHub
+            </h1>
 
-<p class="online">
-● {{ datos.estado }}
-</p>
+
+            <p>
+                Restricted access
+            </p>
+
+        </div>
+
+
+
+        <a href="/logout" class="logout-btn">
+
+            LOGOUT
+
+        </a>
+
+
+    </header>
+
+
+
+
+    <section class="welcome-card">
+
+
+        <h2>
+
+            Welcome,
+            {{ datos.usuario }}
+
+        </h2>
+
+
+        <p>
+
+            Sistema protegido correctamente.
+
+        </p>
+
+
+    </section>
+
+
+
+
+
+    <div class="cards">
+
+
+
+        <div class="dashboard-card">
+
+
+            <h3>
+                Estado
+            </h3>
+
+
+            <span class="online">
+
+                ● {{ datos.estado }}
+
+            </span>
+
+
+        </div>
+
+
+
+
+
+        <div class="dashboard-card">
+
+
+            <h3>
+                Versión
+            </h3>
+
+
+            <p>
+
+                {{ datos.version }}
+
+            </p>
+
+
+        </div>
+
+
+
+
+
+        <div class="dashboard-card">
+
+
+            <h3>
+                Tiempo activo
+            </h3>
+
+
+            <p>
+
+                {{ datos.tiempo }}
+
+            </p>
+
+
+        </div>
+
+
+
+
+    </div>
+
+
+
+
+
+    <section class="modules">
+
+
+        <h2>
+
+            Modules
+
+        </h2>
+
+
+
+        <div class="module-grid">
+
+
+            <div class="module-card">
+
+                <h3>
+                    📜 Scripts
+                </h3>
+
+                <p>
+                    Script management system.
+                </p>
+
+            </div>
+
+
+
+
+            <div class="module-card">
+
+                <h3>
+                    🔑 Licenses
+                </h3>
+
+                <p>
+                    License management.
+                </p>
+
+            </div>
+
+
+
+
+
+            <div class="module-card">
+
+                <h3>
+                    📊 Logs
+                </h3>
+
+                <p>
+                    Security activity.
+                </p>
+
+            </div>
+
+
+
+
+            <div class="module-card">
+
+                <h3>
+                    ⚙️ Settings
+                </h3>
+
+                <p>
+                    System configuration.
+                </p>
+
+            </div>
+
+
+
+        </div>
+
+
+    </section>
+
+
+
+
 
 </div>
 
-
-
-<div class="card">
-
-<h2>Información</h2>
-
-<p>
-Nombre: {{ datos.nombre }}
-</p>
-
-<p>
-Versión: {{ datos.version }}
-</p>
-
-<p>
-Activo: {{ datos.tiempo }}
-</p>
-
-</div>
-
-
-
-<button>
-Settings
-</button>
-
-
-</div>
 
 
 </body>
