@@ -9,7 +9,7 @@ body{
 
     min-height:100vh;
 
-    background:#020202;
+    background:#030303;
 
     color:white;
 
@@ -21,21 +21,16 @@ body{
 }
 
 
-
-/* =====================
-   MATRIX BACKGROUND
-===================== */
+/* =========================
+   LOGIN / GENERAL
+========================= */
 
 
 #matrix{
 
     position:fixed;
 
-    width:100%;
-    height:100%;
-
-    top:0;
-    left:0;
+    inset:0;
 
     z-index:0;
 
@@ -52,188 +47,138 @@ body{
     radial-gradient(
         circle,
         rgba(0,255,120,.12),
-        transparent 65%
+        transparent 70%
     );
 
-    z-index:1;
+}
+
+
+/* =========================
+   DASHBOARD
+========================= */
+
+
+.dashboard-body{
+
+    background:
+
+    radial-gradient(
+        circle at top left,
+        #07351f,
+        #020202 45%
+    );
 
 }
 
 
 
-/* =====================
-   LOGIN
-===================== */
+.dashboard-layout{
 
 
-.login-box{
+    display:flex;
 
-    position:absolute;
 
-    top:50%;
-    left:50%;
+    min-height:100vh;
 
-    transform:
-    translate(-50%,-50%);
 
-    width:420px;
+}
 
-    max-width:90%;
 
-    padding:45px;
 
-    border-radius:25px;
+/* =========================
+   SIDEBAR
+========================= */
+
+
+.sidebar{
+
+
+    width:270px;
+
+
+    padding:30px 20px;
 
 
     background:
-    rgba(15,15,15,.65);
+
+    rgba(15,15,15,.75);
 
 
     backdrop-filter:
     blur(20px);
 
 
-    border:
+    border-right:
+
     1px solid
-    rgba(0,255,120,.25);
+    rgba(0,255,120,.15);
 
-
-    box-shadow:
-
-    0 0 40px
-    rgba(0,255,120,.12);
-
-
-    z-index:5;
-
-    text-align:center;
-
-
-    animation:
-    appear .8s ease;
 
 }
 
 
 
-.logo h1{
+.sidebar-logo h1{
 
-    font-size:48px;
 
-    letter-spacing:3px;
+    font-size:35px;
 
-    color:white;
+
+    letter-spacing:2px;
+
 
 }
 
 
-.logo p{
 
-    margin-top:10px;
+.sidebar-logo span{
+
 
     color:#00ff88;
 
+
+    font-size:12px;
+
+
     letter-spacing:3px;
 
-    font-size:14px;
 
 }
 
 
 
-input{
+.menu{
 
 
-    width:100%;
-
-    height:55px;
-
-    margin-top:20px;
+    margin-top:50px;
 
 
-    padding:0 20px;
+    display:flex;
+
+
+    flex-direction:column;
+
+
+    gap:12px;
+
+
+}
+
+
+
+.menu a{
+
+
+    padding:15px;
+
+
+    color:#aaa;
+
+
+    text-decoration:none;
 
 
     border-radius:12px;
-
-
-    border:none;
-
-
-    outline:none;
-
-
-    background:#111;
-
-
-    color:white;
-
-
-    font-size:16px;
-
-
-    border:
-    1px solid
-    rgba(255,255,255,.1);
-
-}
-
-
-
-input:focus{
-
-
-    border-color:#00ff88;
-
-
-    box-shadow:
-    0 0 15px
-    rgba(0,255,120,.3);
-
-}
-
-
-
-
-.access-btn{
-
-
-    margin-top:30px;
-
-
-    width:100%;
-
-
-    height:58px;
-
-
-    border:none;
-
-
-    border-radius:14px;
-
-
-    cursor:pointer;
-
-
-    font-size:18px;
-
-
-    font-weight:bold;
-
-
-    letter-spacing:4px;
-
-
-    background:
-    linear-gradient(
-    90deg,
-    #00ff88,
-    #00cc66
-    );
-
-
-    color:black;
 
 
     transition:.3s;
@@ -243,90 +188,68 @@ input:focus{
 
 
 
-.access-btn:hover{
-
-
-    transform:
-    translateY(-3px);
-
-
-    box-shadow:
-
-    0 0 25px
-    #00ff88;
-
-
-}
-
-
-
-.error{
-
-
-    margin-top:20px;
-
-
-    padding:12px;
-
-
-    border-radius:10px;
+.menu a:hover,
+.menu .active{
 
 
     background:
-    rgba(255,0,0,.15);
+
+    rgba(0,255,120,.15);
 
 
-    color:#ff7777;
+    color:#00ff88;
+
 
 }
 
 
 
-.footer-text{
+.user-box{
 
 
-    margin-top:30px;
+    position:absolute;
 
 
-    color:#777;
+    bottom:30px;
 
 
-    font-size:13px;
-
-}
+    width:220px;
 
 
-
-/* =====================
-   PANEL
-===================== */
+    padding:20px;
 
 
-.panel-body{
+    border-radius:15px;
+
 
     background:
 
-    radial-gradient(
-    circle at top,
-    #062b18,
-    #020202 50%
-    );
+    rgba(255,255,255,.05);
 
 
 }
 
 
 
-.panel-container{
+.user-box p{
 
 
-    width:90%;
+    color:#888;
 
 
-    max-width:1100px;
+}
 
 
-    margin:auto;
+
+/* =========================
+   MAIN
+========================= */
+
+
+.dashboard-main{
+
+
+    flex:1;
 
 
     padding:35px;
@@ -336,7 +259,7 @@ input:focus{
 
 
 
-.panel-header{
+.topbar{
 
 
     display:flex;
@@ -348,43 +271,27 @@ input:focus{
     align-items:center;
 
 
-    padding:25px;
-
-
-    border-radius:20px;
-
-
-    background:
-
-    rgba(15,15,15,.7);
-
-
-    backdrop-filter:
-    blur(15px);
-
-
-    border:
-    1px solid
-    rgba(0,255,120,.2);
+    margin-bottom:35px;
 
 
 }
 
 
 
-.panel-header h1{
+.topbar h2{
 
 
-    font-size:40px;
+    font-size:35px;
+
 
 }
 
 
 
-.panel-header p{
+.topbar p{
 
 
-    color:#00ff88;
+    color:#888;
 
 
 }
@@ -397,16 +304,16 @@ input:focus{
     padding:14px 25px;
 
 
-    border-radius:12px;
-
-
-    text-decoration:none;
+    background:#00ff88;
 
 
     color:black;
 
 
-    background:#00ff88;
+    text-decoration:none;
+
+
+    border-radius:12px;
 
 
     font-weight:bold;
@@ -423,6 +330,7 @@ input:focus{
 
 
     box-shadow:
+
     0 0 20px #00ff88;
 
 
@@ -430,60 +338,19 @@ input:focus{
 
 
 
-/* =====================
-   CARDS
-===================== */
+/* =========================
+   STATS
+========================= */
 
 
-.welcome-card,
-
-
-.dashboard-card,
-
-
-.module-card{
-
-
-    background:
-
-    rgba(20,20,20,.7);
-
-
-    backdrop-filter:
-    blur(15px);
-
-
-    border-radius:20px;
-
-
-    border:
-    1px solid
-    rgba(0,255,120,.15);
-
-
-    padding:25px;
-
-
-}
-
-
-
-.welcome-card{
-
-
-    margin-top:30px;
-
-}
-
-
-
-.cards{
+.stats{
 
 
     display:grid;
 
 
     grid-template-columns:
+
     repeat(
     auto-fit,
     minmax(220px,1fr)
@@ -493,20 +360,55 @@ input:focus{
     gap:20px;
 
 
-    margin-top:25px;
+}
+
+
+
+.stat-card{
+
+
+    padding:25px;
+
+
+    border-radius:20px;
+
+
+    background:
+
+    rgba(20,20,20,.65);
+
+
+    backdrop-filter:
+    blur(15px);
+
+
+    border:
+
+    1px solid
+    rgba(0,255,120,.15);
 
 
 }
 
 
 
-.dashboard-card h3{
+.stat-card span{
 
 
-    color:#00ff88;
+    color:#888;
 
 
-    margin-bottom:15px;
+}
+
+
+
+.stat-card h3{
+
+
+    margin-top:15px;
+
+
+    font-size:25px;
 
 
 }
@@ -519,15 +421,16 @@ input:focus{
     color:#00ff88;
 
 
-    font-weight:bold;
-
-
 }
 
 
 
+/* =========================
+   MODULES
+========================= */
 
-.modules{
+
+.content-panel{
 
 
     margin-top:40px;
@@ -537,30 +440,55 @@ input:focus{
 
 
 
-.module-grid{
+.content-panel h2{
 
 
-    display:grid;
-
-
-    grid-template-columns:
-    repeat(
-    auto-fit,
-    minmax(220px,1fr)
-    );
-
-
-    gap:20px;
-
-
-    margin-top:20px;
+    margin-bottom:20px;
 
 
 }
 
 
 
-.module-card{
+.modules-grid{
+
+
+    display:grid;
+
+
+    grid-template-columns:
+
+    repeat(
+    auto-fit,
+    minmax(230px,1fr)
+    );
+
+
+    gap:20px;
+
+
+}
+
+
+
+.module-box{
+
+
+    padding:25px;
+
+
+    border-radius:20px;
+
+
+    background:
+
+    rgba(20,20,20,.65);
+
+
+    border:
+
+    1px solid
+    rgba(0,255,120,.15);
 
 
     transition:.3s;
@@ -570,24 +498,27 @@ input:focus{
 
 
 
-.module-card:hover{
+.module-box:hover{
 
 
     transform:
-    translateY(-5px);
+    translateY(-6px);
 
 
     box-shadow:
 
-    0 0 20px
-    rgba(0,255,120,.2);
+    0 0 25px
+    rgba(0,255,120,.15);
 
 
 }
 
 
 
-.module-card h3{
+.module-box .icon{
+
+
+    font-size:35px;
 
 
     margin-bottom:15px;
@@ -597,96 +528,109 @@ input:focus{
 
 
 
-/* =====================
-   ANIMATION
-===================== */
+.module-box h3{
 
 
-@keyframes appear{
+    color:#00ff88;
 
 
-    from{
-
-
-        opacity:0;
-
-
-        transform:
-        translate(-50%,-40%);
-
-
-    }
-
-
-    to{
-
-
-        opacity:1;
-
-
-        transform:
-        translate(-50%,-50%);
-
-
-    }
+    margin-bottom:10px;
 
 
 }
 
 
 
-/* =====================
+.module-box p{
+
+
+    color:#aaa;
+
+
+}
+
+
+
+/* =========================
    MOBILE
-===================== */
+========================= */
 
 
-@media(max-width:600px){
+@media(max-width:800px){
 
 
-    .login-box{
+.dashboard-layout{
 
 
-        padding:30px 20px;
+    flex-direction:column;
 
 
-    }
-
-
-
-    .logo h1{
-
-
-        font-size:38px;
-
-
-    }
+}
 
 
 
-    .panel-header{
+.sidebar{
 
 
-        flex-direction:column;
+    width:100%;
 
 
-        gap:20px;
-
-
-        text-align:center;
-
-
-    }
+}
 
 
 
-    .panel-header h1{
+.menu{
 
 
-        font-size:32px;
+    flex-direction:row;
 
 
-    }
+    overflow:auto;
 
+
+}
+
+
+
+.user-box{
+
+
+    position:static;
+
+
+    width:100%;
+
+
+    margin-top:25px;
+
+
+}
+
+
+
+.dashboard-main{
+
+
+    padding:20px;
+
+
+}
+
+
+
+.topbar{
+
+
+    flex-direction:column;
+
+
+    gap:20px;
+
+
+    align-items:flex-start;
+
+
+}
 
 
 }
