@@ -11,35 +11,18 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 import os
 import hashlib
-
+import uuid
 
 app = Flask(__name__)
-
-
-# ==================================================
-# CONFIGURACIÓN
-# ==================================================
-
-app.secret_key = os.environ.get(
-    "SECRET_KEY",
-    "silenthub-change-this-secret"
-)
-
+app.secret_key = os.environ.get("SECRET_KEY", "silenthub-change-this-secret")
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///silenthub.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
 app.config["REMEMBER_COOKIE_DURATION"] = timedelta(days=30)
 app.config["REMEMBER_COOKIE_HTTPONLY"] = True
 app.config["REMEMBER_COOKIE_SECURE"] = False
 
-
 inicio_servidor = datetime.now()
 db = SQLAlchemy(app)
-
-
-# ==================================================
-# MODELOS DE BASE DE DATOS
-# ==================================================
 
 class Usuario(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -61,10 +44,13 @@ class EjecucionScript(db.Model):
     ip_address = db.Column(db.String(50))
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
-
-# ==================================================
-# LOGIN SYSTEM
-# ==================================================
+class Licencia(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    clave = db.Column(db.String(100), unique=True, nullable=False)
+    tipo = db.Column(db.String(20))
+    duracion = db.Column(db.String(20))
+    estado = db.Column(db.String(20), default="Activa")
+    fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -81,18 +67,17 @@ def inicializar_sistema():
         db.session.add(admin)
         db.session.commit()
         
-    # Crear carpeta para alojar los scripts de Lua si no existe
+    if not Licencia.query.first():
+        licencia_prueba = Licencia(clave="AllForOne", tipo="Whitelist", duracion="Permanent", estado="Activa")
+        db.session.add(licencia_prueba)
+        db.session.commit()
+        
     if not os.path.exists('scripts'):
         os.makedirs('scripts')
 
 with app.app_context():
     db.create_all()
     inicializar_sistema()
-
-
-# ==================================================
-# RUTAS DE INTERFAZ (UI)
-# ==================================================
 
 @app.route('/', methods=['GET'])
 def index():
@@ -106,36 +91,21 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        
         ip_address = request.remote_addr
         user_agent = request.user_agent.string
-        
         user = Usuario.query.filter_by(username=username).first()
         pass_hash = hashlib.sha256(password.encode()).hexdigest() if password else ""
 
         if user and user.password_hash == pass_hash:
             login_user(user, remember=True)
-            
-            log = RegistroSeguridad(
-                ip_address=ip_address, 
-                user_agent=user_agent, 
-                attempted_username=username, 
-                status="SUCCESS"
-            )
+            log = RegistroSeguridad(ip_address=ip_address, user_agent=user_agent, attempted_username=username, status="SUCCESS")
             db.session.add(log)
             db.session.commit()
-            
             return redirect(url_for('panel'))
         else:
-            log = RegistroSeguridad(
-                ip_address=ip_address, 
-                user_agent=user_agent, 
-                attempted_username=username, 
-                status="FAILED"
-            )
+            log = RegistroSeguridad(ip_address=ip_address, user_agent=user_agent, attempted_username=username, status="FAILED")
             db.session.add(log)
             db.session.commit()
-            
             flash("ACCESO DENEGADO - CREDENCIALES INVÁLIDAS")
 
     return render_template('login.html')
@@ -155,42 +125,101 @@ def panel():
     uptime_str = f"{tiempo_activo.days}d {horas}h {minutos}m"
 
     datos_servidor = {
-        "estado": "En línea",
-        "version": "SilentHub v2.0",
-        "tiempo": uptime_str,
-        "usuario": current_user.username
+        "usuario": current_user.username,
+        "tiempo": uptime_str
     }
     
-    # Consultas a la base de datos para mostrar en la interfaz
-    ejecuciones_recientes = EjecucionScript.query.order_by(EjecucionScript.timestamp.desc()).limit(5).all()
-    registros_seguridad = RegistroSeguridad.query.order_by(RegistroSeguridad.timestamp.desc()).limit(5).all()
+    now = datetime.utcnow()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    week_start = today_start - timedelta(days=now.weekday())
+    month_start = today_start.replace(day=1)
+    year_start = today_start.replace(month=1, day=1)
+
+    stats_telemetria = {
+        'diario': EjecucionScript.query.filter(EjecucionScript.timestamp >= today_start).count(),
+        'semanal': EjecucionScript.query.filter(EjecucionScript.timestamp >= week_start).count(),
+        'mensual': EjecucionScript.query.filter(EjecucionScript.timestamp >= month_start).count(),
+        'anual': EjecucionScript.query.filter(EjecucionScript.timestamp >= year_start).count()
+    }
+
+    stats_seguridad = {
+        'diario': RegistroSeguridad.query.filter(RegistroSeguridad.timestamp >= today_start, RegistroSeguridad.status == 'FAILED').count(),
+        'semanal': RegistroSeguridad.query.filter(RegistroSeguridad.timestamp >= week_start, RegistroSeguridad.status == 'FAILED').count(),
+        'mensual': RegistroSeguridad.query.filter(RegistroSeguridad.timestamp >= month_start, RegistroSeguridad.status == 'FAILED').count(),
+        'anual': RegistroSeguridad.query.filter(RegistroSeguridad.timestamp >= year_start, RegistroSeguridad.status == 'FAILED').count()
+    }
+
+    licencias_recientes = Licencia.query.order_by(Licencia.fecha_creacion.desc()).all()
+    ejecuciones_recientes = EjecucionScript.query.order_by(EjecucionScript.timestamp.desc()).limit(15).all()
+    registros_seguridad = RegistroSeguridad.query.order_by(RegistroSeguridad.timestamp.desc()).limit(15).all()
     
     return render_template(
         'panel.html', 
         datos=datos_servidor, 
+        licencias=licencias_recientes,
         ejecuciones=ejecuciones_recientes, 
-        seguridad=registros_seguridad
+        seguridad=registros_seguridad,
+        stats_telemetria=stats_telemetria,
+        stats_seguridad=stats_seguridad
     )
 
+@app.route('/licencias/crear', methods=['POST'])
+@login_required
+def crear_licencia():
+    clave = request.form.get('clave', '').strip()
+    tipo = request.form.get('tipo', 'KeySystem')
+    duracion = request.form.get('duracion', 'Permanent')
+    
+    if tipo == 'KeySystem' and not clave:
+        clave = f"SILENT-{uuid.uuid4().hex[:8].upper()}"
+    elif not clave:
+        flash("Debe ingresar un identificador para Whitelist.")
+        return redirect(url_for('panel'))
+        
+    existe = Licencia.query.filter_by(clave=clave).first()
+    if existe:
+        flash("La licencia o identificador ya existe.")
+        return redirect(url_for('panel'))
+        
+    nueva = Licencia(clave=clave, tipo=tipo, duracion=duracion, estado="Activa")
+    db.session.add(nueva)
+    db.session.commit()
+    return redirect(url_for('panel'))
 
-# ==================================================
-# API DE TELEMETRÍA (CONEXIÓN LUA)
-# ==================================================
+@app.route('/licencias/revocar/<int:id>', methods=['POST'])
+@login_required
+def revocar_licencia(id):
+    lic = Licencia.query.get_or_404(id)
+    lic.estado = "Revocada" if lic.estado == "Activa" else "Activa"
+    db.session.commit()
+    return redirect(url_for('panel'))
 
 @app.route('/api/load', methods=['GET'])
 def load_script():
     uid = request.args.get('uid')
     user = request.args.get('user')
+    key = request.args.get('key')
     ip_address = request.remote_addr
     
     if uid and user:
-        nueva_ejecucion = EjecucionScript(
-            roblox_username=user,
-            universe_id=uid,
-            ip_address=ip_address
-        )
+        nueva_ejecucion = EjecucionScript(roblox_username=user, universe_id=uid, ip_address=ip_address)
         db.session.add(nueva_ejecucion)
         db.session.commit()
+        
+    acceso_permitido = False
+    
+    if user:
+        lic_whitelist = Licencia.query.filter_by(clave=user, tipo="Whitelist", estado="Activa").first()
+        if lic_whitelist:
+            acceso_permitido = True
+            
+    if not acceso_permitido and key:
+        lic_key = Licencia.query.filter_by(clave=key, tipo="KeySystem", estado="Activa").first()
+        if lic_key:
+            acceso_permitido = True
+            
+    if not acceso_permitido:
+        return 'warn("SilentHub: ACCESO DENEGADO - Licencia invalida o expirada.")', 403
         
     ruta_script = os.path.join(os.path.dirname(__file__), 'scripts', 'main.lua')
     
@@ -200,7 +229,6 @@ def load_script():
         return codigo_lua, 200, {'Content-Type': 'text/plain'}
     else:
         return 'print("SilentHub: El archivo main.lua no se encuentra en el servidor.")', 404
-
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
