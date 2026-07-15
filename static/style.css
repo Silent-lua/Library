@@ -1,45 +1,6 @@
 /* =========================
-   LOGIN FIX SILENTHUB
+   SILENTHUB HACKER LOGIN
 ========================= */
-
-
-#matrix{
-
-    position:fixed;
-
-    top:0;
-    left:0;
-
-    width:100%;
-    height:100%;
-
-    z-index:0;
-
-}
-
-
-
-.background-glow{
-
-    position:fixed;
-
-    inset:0;
-
-    z-index:1;
-
-    pointer-events:none;
-
-    background:
-
-    radial-gradient(
-        circle,
-        rgba(0,255,120,0.15),
-        transparent 60%
-    );
-
-}
-
-
 
 
 .login-box{
@@ -58,46 +19,47 @@
 
     padding:40px;
 
+    background:transparent;
 
-    background:
+    border:none;
 
-    rgba(15,15,15,0.85);
+    box-shadow:none;
 
-
-    backdrop-filter:
-
-    blur(20px);
-
-
-
-    border-radius:25px;
-
-
-    border:
-
-    1px solid
-    rgba(0,255,120,.25);
-
+    backdrop-filter:none;
 
     z-index:10;
 
-
     text-align:center;
-
 
 }
 
 
+
+/* TITULO RGB NEGRO + CONTORNO */
 
 .logo h1{
 
+    font-size:55px;
 
-    font-size:45px;
+    letter-spacing:4px;
 
-    color:white;
+    color:rgb(0,0,0);
+
+
+    -webkit-text-stroke:
+
+    2px rgb(153,255,255);
+
+
+    text-shadow:
+
+    0 0 15px
+    rgb(153,255,255);
 
 
 }
+
+
 
 
 
@@ -106,11 +68,22 @@
 
     margin-top:10px;
 
-    color:#00ff88;
+
+    font-size:15px;
+
+
+    letter-spacing:3px;
+
+
+    color:rgb(0,0,0);
+
+
+    -webkit-text-stroke:
+
+    0.8px rgb(153,255,255);
 
 
 }
-
 
 
 
@@ -136,31 +109,57 @@
     border-radius:12px;
 
 
-    border:none;
+    background:
+
+    rgba(0,0,0,0.35);
 
 
-    outline:none;
+    border:
 
-
-    background:#111;
+    1px solid
+    rgb(153,255,255);
 
 
     color:white;
 
 
+    outline:none;
+
+
     font-size:16px;
+
+
+    backdrop-filter:blur(5px);
 
 
 }
 
 
 
+
+
+.login-box input::placeholder{
+
+
+    color:
+
+    rgb(153,255,255);
+
+
+}
+
+
+
+
+
 .login-box input:focus{
 
 
-    border:
+    box-shadow:
 
-    1px solid #00ff88;
+
+    0 0 20px
+    rgb(153,255,255);
 
 
 }
@@ -172,44 +171,49 @@
 .access-btn{
 
 
+    margin-top:30px;
+
+
     width:100%;
 
 
-    height:55px;
+    height:58px;
 
 
-    margin-top:25px;
-
-
-    border:none;
-
-
-    border-radius:12px;
+    border-radius:15px;
 
 
     cursor:pointer;
 
 
-    background:
-
-    linear-gradient(
-    90deg,
-    #00ff88,
-    #00cc66
-    );
-
-
-    color:black;
+    font-size:18px;
 
 
     font-weight:bold;
 
 
-    letter-spacing:3px;
+    letter-spacing:4px;
+
+
+    color:black;
+
+
+    background:
+
+
+    rgb(153,255,255);
+
+
+    border:
+
+    2px solid
+    black;
+
+
+    transition:.3s;
 
 
 }
-
 
 
 
@@ -219,7 +223,14 @@
 
     box-shadow:
 
-    0 0 25px #00ff88;
+
+    0 0 30px
+    rgb(153,255,255);
+
+
+    transform:
+
+    translateY(-3px);
 
 
 }
@@ -231,25 +242,19 @@
 .footer-text{
 
 
-    margin-top:25px;
+    margin-top:30px;
 
 
-    color:#777;
+    color:
+
+    rgb(153,255,255);
 
 
-    font-size:13px;
+    text-shadow:
 
 
-}
+    0 0 10px
+    rgb(153,255,255);
 
-
-
-
-.error{
-
-
-    margin-top:20px;
-
-    color:#ff5555;
 
 }
