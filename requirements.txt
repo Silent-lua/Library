@@ -1,4 +1,14 @@
 Flask==3.1.0
 Flask-Login==0.6.3
-gunicorn==23.0.0
 Flask-SQLAlchemy==3.1.1
+gunicorn==23.0.0
+
+# Base de datos y configuración
+supabase==2.7.4
+python-dotenv==1.0.1
+
+# Seguridad
+bcrypt==4.2.0
+
+# Utilidades
+requests==2.32.3
