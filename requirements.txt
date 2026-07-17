@@ -4,4 +4,4 @@ Flask-SQLAlchemy
 python-dotenv
 gunicorn
 SQLAlchemy
-psycopg[binary]
+psycopg2-binary
