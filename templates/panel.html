@@ -1,3 +1,4 @@
+<!-- SilentHub v2 Sprint 1 -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -186,38 +187,6 @@
             color: #ff4444 !important;
         }
 
-        .top-status-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-        .status-card {
-            background: #121212;
-            border: 1px solid #222;
-            border-left: 4px solid #00ff88;
-            border-radius: 12px;
-            padding: 16px 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .status-label {
-            font-size: 0.75rem;
-            color: #666;
-            text-transform: uppercase;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-        .status-value {
-            font-size: 1.3rem;
-            color: #fff;
-            font-weight: bold;
-        }
-        .green-text {
-            color: #00ff88;
-        }
-
         .license-layout-grid {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -334,9 +303,48 @@
             font-weight: 500;
         }
     </style>
+
+<style>
+.mobile-hero{display:flex;flex-direction:column;gap:14px;margin:18px 0 24px}
+.hero-card{background:linear-gradient(180deg,#171717,#101010);border:1px solid #252525;border-radius:18px;padding:18px}
+.hero-card h2{margin:0;font-size:1.4rem;color:#fff}
+.hero-card p{margin:6px 0 0;color:#9aa0a6}
+.mobile-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.action-card{background:#151515;border:1px solid #242424;border-radius:16px;padding:14px;color:#fff;text-decoration:none}
+.action-card span{display:block;color:#7f8790;font-size:.8rem;margin-top:6px}
+</style>
+
 </head>
 
 <body class="dashboard-body">
+
+<!-- Mobile v2 Header -->
+<header class="mobile-app-header">
+<button id="menuToggleMobile" class="mobile-menu-btn">☰</button>
+<div class="mobile-brand">
+<h2>SilentHub</h2>
+<small>Mobile Control Center</small>
+</div>
+<div class="mobile-avatar">{{ datos.usuario[0]|upper }}</div>
+</header>
+
+<nav class="mobile-drawer" id="mobileDrawer">
+<a href="#">🏠 Lobby</a>
+<a href="#">🔑 Licenses</a>
+<a href="#">📜 Scripts</a>
+<a href="/analytics">📊 Analytics</a>
+<a href="#">🛡 Security</a>
+<a href="#">⚙ Settings</a>
+<a href="/logout">🚪 Logout</a>
+</nav>
+
+<section class="mobile-overview">
+<div class="mobile-stat"><span>Total Licenses</span><strong>{{ stats_licencias.total }}</strong></div>
+<div class="mobile-stat"><span>Active</span><strong>{{ stats_licencias.active }}</strong></div>
+<div class="mobile-stat"><span>Expired</span><strong>{{ stats_licencias.expired }}</strong></div>
+<div class="mobile-stat"><span>Revoked</span><strong>{{ stats_licencias.revoked }}</strong></div>
+</section>
+
 
 <div class="dashboard-layout">
 
@@ -366,18 +374,115 @@
 
     <main class="dashboard-main">
         <header class="topbar">
+
             <div class="topbar-left">
-                <button class="menu-toggle" id="menuToggle">☰</button>
-                <div>
-                    <h2>System Overview</h2>
-                    <p>Live Node Telemetry</p>
+
+                <button class="menu-toggle" id="menuToggle">
+                    ☰
+                </button>
+
+                <div class="page-title">
+
+                    <span class="page-badge">
+                        SILENTHUB V2
+                    </span>
+
+                    <h1>Lobby</h1>
+
+                    <p>
+                        Private Infrastructure Management Platform
+                    </p>
+
                 </div>
+
             </div>
-            <a href="/logout" class="logout-btn">TERMINATE</a>
+
+            <div class="topbar-right">
+
+                <div class="search-box">
+
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                        fill="none" stroke="currentColor" stroke-width="2"
+                        viewBox="0 0 24 24">
+
+                        <circle cx="11" cy="11" r="8"></circle>
+
+                        <line x1="21" y1="21"
+                              x2="16.65"
+                              y2="16.65"></line>
+
+                    </svg>
+
+                    <input
+                        type="text"
+                        placeholder="Search license, owner..."
+                    >
+
+                </div>
+
+                <div class="system-status">
+
+                    <span class="status-dot"></span>
+
+                    <span>ONLINE</span>
+
+                </div>
+
+                <div class="profile-box">
+
+                    <div class="profile-avatar">
+                        {{ datos.usuario[0]|upper }}
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            {{ datos.usuario }}
+                        </strong>
+
+                        <small>
+                            Administrator
+                        </small>
+
+                    </div>
+
+                </div>
+
+                <a href="/logout" class="logout-btn">
+
+                    Logout
+
+                </a>
+
+            </div>
+
         </header>
 
         <section class="content">
+
+<!-- ===== License Center Mobile (Sprint 1.3) ===== -->
+<section class="license-mobile">
+  <div class="mobile-search">
+    <input type="text" placeholder="Search license...">
+  </div>
+  <div class="mobile-filters">
+    <button>All</button><button>Active</button><button>Expired</button><button>Revoked</button>
+  </div>
+</section>
+
             <section class="content-panel" style="background: transparent; border: none; padding: 0;">
+
+<section class="mobile-hero">
+<div class="hero-card">
+<h2>Welcome back, {{ datos.usuario }}</h2>
+<p>SilentHub Mobile v2 • Secure Infrastructure</p>
+</div>
+<div class="mobile-actions">
+<a href="#licenses" class="action-card"><strong>Licenses</strong><span>Manage all access keys</span></a>
+<a href="/analytics" class="action-card"><strong>Analytics</strong><span>Realtime activity</span></a>
+</div>
+</section>
+
 
                 {% with messages = get_flashed_messages() %}
                   {% if messages %}
@@ -389,23 +494,118 @@
                   {% endif %}
                 {% endwith %}
 
-                <div class="top-status-grid">
-                    <div class="status-card">
-                        <span class="status-label">Network Status</span>
-                        <strong class="status-value green-text">● Secure Relay</strong>
+                <div class="dashboard-cards">
+
+                    <div class="dashboard-card">
+
+                        <span>
+                            Total Licenses
+                        </span>
+
+                        <strong>
+
+                            {{ stats_licencias.total }}
+
+                        </strong>
+
+                        <small>
+                            Registered
+                        </small>
+
                     </div>
-                    <div class="status-card">
-                        <span class="status-label">Environment</span>
-                        <strong class="status-value">Production</strong>
+
+                    <div class="dashboard-card success">
+
+                        <span>
+                            Active
+                        </span>
+
+                        <strong>
+
+                            {{ stats_licencias.active }}
+
+                        </strong>
+
+                        <small>
+                            Operational
+                        </small>
+
                     </div>
-                    <div class="status-card">
-                        <span class="status-label">Server Uptime</span>
-                        <strong class="status-value">{{ datos.tiempo }}</strong>
+
+                    <div class="dashboard-card warning">
+
+                        <span>
+                            Expired
+                        </span>
+
+                        <strong>
+
+                            {{ stats_licencias.expired }}
+
+                        </strong>
+
+                        <small>
+                            Require Renewal
+                        </small>
+
                     </div>
-                    <div class="status-card">
-                        <span class="status-label">Admin Identity</span>
-                        <strong class="status-value">admin</strong>
+
+                    <div class="dashboard-card danger">
+
+                        <span>
+                            Revoked
+                        </span>
+
+                        <strong>
+
+                            {{ stats_licencias.revoked }}
+
+                        </strong>
+
+                        <small>
+                            Blocked
+                        </small>
+
                     </div>
+
+                    <div class="dashboard-card info">
+
+                        <span>
+                            Uptime
+                        </span>
+
+                        <strong>
+
+                            {{ datos.tiempo }}
+
+                        </strong>
+
+                        <small>
+                            Server Runtime
+                        </small>
+
+                    </div>
+
+                    <div class="dashboard-card online">
+
+                        <span>
+                            Environment
+                        </span>
+
+                        <strong>
+
+                            Production
+
+                        </strong>
+
+                        <small>
+
+                            Secure Relay
+
+                        </small>
+
+                    </div>
+
                 </div>
 
                 <div class="license-layout-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 30px;">
@@ -437,6 +637,8 @@
                                     <tr>
                                         <th>Identificador</th>
                                         <th>Estructura</th>
+                                        <th>Owner</th>
+                                        <th>Notes</th>
                                         <th>Duración</th>
                                         <th>Estado</th>
                                         <th>Acción</th>
@@ -445,23 +647,25 @@
                                 <tbody>
                                     {% for lic in licencias %}
                                     <tr>
-                                        <td style="color: #fff; font-weight: 600;" class="mono-text">{{ lic.clave }}</td>
+                                        <td style="color: #fff; font-weight: 600;" class="mono-text">{{ lic.license_key }}</td>
                                         <td>
-                                            {% if lic.tipo == 'Whitelist' %}
+                                            {% if lic.license_type == 'Whitelist' %}
                                                 <span class="badge badge-purple">Whitelist</span>
                                             {% else %}
                                                 <span class="badge badge-orange">KeySystem</span>
                                             {% endif %}
                                         </td>
-                                        <td class="text-dim">{{ lic.duracion }}</td>
+                                        <td class="text-dim">{{ lic.owner }}</td>
+                                        <td class="text-dim">{{ lic.notes }}</td>
+                                        <td class="text-dim">{{ lic.expires_at }}</td>
                                         <td>
-                                            <span class="{% if lic.estado == 'Activa' %}status-success{% else %}status-failed{% endif %}">
-                                                {{ lic.estado }}
+                                            <span class="{% if lic.status == 'Activa' %}status-success{% else %}status-failed{% endif %}">
+                                                {{ lic.status }}
                                             </span>
                                         </td>
                                         <td>
                                             <form action="/licencias/revocar/{{ lic.id }}" method="POST" style="display: inline;">
-                                                {% if lic.estado == 'Activa' %}
+                                                {% if lic.status == 'Activa' %}
                                                     <button type="submit" class="btn-revoke">REVOKE</button>
                                                 {% else %}
                                                     <button type="submit" class="btn-reactivate">ACTIVATE</button>
@@ -471,7 +675,7 @@
                                     </tr>
                                     {% else %}
                                     <tr>
-                                        <td colspan="5" style="text-align: center; color: #555; padding: 30px;">
+                                        <td colspan="7" style="text-align: center; color: #555; padding: 30px;">
                                             No active licenses generated.
                                         </td>
                                     </tr>
@@ -494,9 +698,10 @@
                             <div class="form-group">
                                 <label for="duracion">Duración Acceso</label>
                                 <select id="duracion" name="duracion" class="form-control">
-                                    <option value="Dias">Días</option>
-                                    <option value="Semanas">Semanas</option>
-                                    <option value="Meses">Meses</option>
+                                    <option value="1 Day">1 Day</option>
+                                    <option value="7 Days">7 Days</option>
+                                    <option value="30 Days">30 Days</option>
+                                    <option value="90 Days">90 Days</option>
                                     <option value="Permanent">Permanent</option>
                                 </select>
                             </div>
@@ -649,9 +854,71 @@
                     </div>
                 </div>
 
-            </section>
+            
+<section class="license-premium">
+<div class="license-toolbar">
+<input class="license-search" placeholder="Search license, owner...">
+<div class="license-chips">
+<button class="active">All</button>
+<button>Active</button>
+<button>Expired</button>
+<button>Revoked</button>
+<button>Whitelist</button>
+<button>KeySystem</button>
+</div>
+</div>
+
+<div class="license-card-premium">
+<div class="license-head">
+<strong>{{ lic.license_key if lic is defined else 'SAMPLE-LICENSE' }}</strong>
+<span class="badge badge-green">ACTIVE</span>
+</div>
+<div class="license-grid">
+<div><small>Owner</small><b>{{ lic.owner if lic is defined else 'Owner' }}</b></div>
+<div><small>Expires</small><b>{{ lic.expires_at if lic is defined else '30 Days' }}</b></div>
+</div>
+<div class="license-actions">
+<button>📋 Copy</button>
+<button>✏ Edit</button>
+<button>🚫 Revoke</button>
+<button>🗑 Delete</button>
+</div>
+</div>
+</section>
+
+</section>
         </section>
-    </main>
+    
+<!-- Sprint 1.5 Dynamic License Cards -->
+<section class="license-list-mobile">
+{% for lic in licencias %}
+<div class="license-card-pro">
+  <div class="license-top">
+    <div>
+      <h4>{{ lic.license_key if lic.license_key is defined else lic.clave }}</h4>
+      <small>{{ lic.owner if lic.owner is defined else 'Unknown Owner' }}</small>
+    </div>
+    <span class="status-pill {{ (lic.status if lic.status is defined else lic.estado)|lower }}">
+      {{ lic.status if lic.status is defined else lic.estado }}
+    </span>
+  </div>
+
+  <div class="license-meta">
+    <div><label>Type</label><strong>{{ lic.license_type if lic.license_type is defined else lic.tipo }}</strong></div>
+    <div><label>Expires</label><strong>{{ lic.expires_at if lic.expires_at is defined else lic.duracion }}</strong></div>
+  </div>
+
+  <div class="license-buttons">
+    <button>📋 Copy</button>
+    <button>✏️ Edit</button>
+    <button>🚫 Revoke</button>
+    <button>🗑 Delete</button>
+  </div>
+</div>
+{% endfor %}
+</section>
+
+</main>
 
 </div>
 
