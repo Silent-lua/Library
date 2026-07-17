@@ -6,7 +6,7 @@ from flask_login import (
     logout_user,
     login_required,
     current_user
-)
+) # [CORRECCIÓN]: Paréntesis de cierre añadido
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_
 from datetime import datetime, timedelta
@@ -15,14 +15,12 @@ import hashlib
 import secrets
 
 app = Flask(__name__)
-
 app.secret_key = os.environ.get(
     "SECRET_KEY",
     "silenthub-change-this-secret"
-)
+) # [CORRECCIÓN]: Paréntesis de cierre añadido
 
 database_url = os.environ.get("DATABASE_URL")
-
 if database_url:
     database_url = database_url.replace("postgres://", "postgresql://", 1)
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
@@ -40,7 +38,6 @@ db = SQLAlchemy(app)
 # ==========================================
 # MODELOS DE BASE DE DATOS
 # ==========================================
-
 class Usuario(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
@@ -65,7 +62,7 @@ class Licencia(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     license_key = db.Column(db.String(64), unique=True, nullable=False)
     owner = db.Column(db.String(100), default="")
-    license_type = db.Column(db.String(20), default="KeySystem")
+    license_type = db.Column(db.String(20), default="Whitelist") # Forzado a Whitelist por defecto
     status = db.Column(db.String(20), default="ACTIVE")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     expires_at = db.Column(db.DateTime, nullable=True)
@@ -76,33 +73,18 @@ class Licencia(db.Model):
     revoked_at = db.Column(db.DateTime, nullable=True)
     notes = db.Column(db.Text, default="")
 
-
 # ==========================================
 # FUNCIONES AUXILIARES
 # ==========================================
-
-ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
-
-def generate_license_key():
-    while True:
-        key = (
-            "Silent-"
-            + "".join(secrets.choice(ALPHABET) for _ in range(4))
-            + "-"
-            + "".join(secrets.choice(ALPHABET) for _ in range(4))
-        )
-        if not Licencia.query.filter_by(license_key=key).first():
-            return key
-
 def update_license_status(license_obj):
-    """Actualiza automáticamente el estado de una licencia basado en su fecha de expiración."""
+    """Actualiza automáticamente el estado del acceso basado en su fecha de expiración."""
     if license_obj.status == "REVOKED":
         return
-    
+        
     if license_obj.expires_at is None:
         license_obj.status = "ACTIVE"
         return
-        
+            
     if datetime.utcnow() >= license_obj.expires_at:
         license_obj.status = "EXPIRED"
     else:
@@ -112,7 +94,7 @@ def parse_duration(duracion_str, base_date=None):
     """Convierte un string de duración a una fecha de expiración."""
     if base_date is None:
         base_date = datetime.utcnow()
-        
+            
     if duracion_str == "1 Day":
         return base_date + timedelta(days=1)
     elif duracion_str == "7 Days":
@@ -123,11 +105,9 @@ def parse_duration(duracion_str, base_date=None):
         return base_date + timedelta(days=90)
     return None # Permanent
 
-
 # ==========================================
 # INICIALIZACIÓN Y LOGIN
 # ==========================================
-
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
@@ -142,17 +122,17 @@ def inicializar_sistema():
         admin = Usuario(username="admin", password_hash=hash_pass)
         db.session.add(admin)
         db.session.commit()
-        
+            
     if not Licencia.query.first():
         licencia_prueba = Licencia(
-            license_key="AllForOne", 
+            license_key="TuUsuarioRoblox", 
             license_type="Whitelist", 
             owner="Admin",
             status="ACTIVE"
         )
         db.session.add(licencia_prueba)
         db.session.commit()
-        
+            
     if not os.path.exists('scripts'):
         os.makedirs('scripts')
 
@@ -163,7 +143,6 @@ with app.app_context():
 # ==========================================
 # RUTAS WEB (AUTH & PANEL)
 # ==========================================
-
 @app.route('/', methods=['GET'])
 def index():
     return redirect(url_for('login'))
@@ -178,7 +157,7 @@ def login():
         password = request.form.get('password')
         ip_address = request.remote_addr
         user_agent = request.user_agent.string
-        
+            
         user = Usuario.query.filter_by(username=username).first()
         pass_hash = hashlib.sha256(password.encode()).hexdigest() if password else ""
 
@@ -205,12 +184,10 @@ def logout():
 @app.route('/panel')
 @login_required
 def panel():
-    # 1. Actualizar estados antes de calcular estadísticas para máxima precisión
     for licencia in Licencia.query.all():
         update_license_status(licencia)
     db.session.commit()
 
-    # Estadísticas del servidor
     tiempo_activo = datetime.now() - inicio_servidor
     horas, rem = divmod(tiempo_activo.seconds, 3600)
     minutos, _ = divmod(rem, 60)
@@ -220,8 +197,7 @@ def panel():
         "usuario": current_user.username,
         "tiempo": uptime_str
     }
-    
-    # Fechas para telemetría
+        
     now = datetime.utcnow()
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     week_start = today_start - timedelta(days=now.weekday())
@@ -242,7 +218,6 @@ def panel():
         'anual': RegistroSeguridad.query.filter(RegistroSeguridad.timestamp >= year_start, RegistroSeguridad.status == 'FAILED').count()
     }
 
-    # Estadísticas de Licencias
     stats_licencias = {
         'total': Licencia.query.count(),
         'active': Licencia.query.filter_by(status='ACTIVE').count(),
@@ -250,13 +225,10 @@ def panel():
         'revoked': Licencia.query.filter_by(status='REVOKED').count()
     }
 
-    # Búsqueda y Filtros de Licencias
     busqueda = request.args.get("q", "").strip()
     estado = request.args.get("estado", "").strip()
-    tipo = request.args.get("tipo", "").strip()
-
+        
     query = Licencia.query
-
     if busqueda:
         query = query.filter(
             or_(
@@ -264,17 +236,13 @@ def panel():
                 Licencia.owner.ilike(f"%{busqueda}%")
             )
         )
-
     if estado:
         query = query.filter_by(status=estado)
-    if tipo:
-        query = query.filter_by(license_type=tipo)
 
     licencias_recientes = query.order_by(Licencia.created_at.desc()).all()
-
     ejecuciones_recientes = EjecucionScript.query.order_by(EjecucionScript.timestamp.desc()).limit(15).all()
     registros_seguridad = RegistroSeguridad.query.order_by(RegistroSeguridad.timestamp.desc()).limit(15).all()
-    
+        
     return render_template(
         'panel.html', 
         datos=datos_servidor, 
@@ -286,65 +254,54 @@ def panel():
         stats_licencias=stats_licencias
     )
 
-
 # ==========================================
-# RUTAS CRUD DE LICENCIAS
+# RUTAS CRUD DE WHITELIST
 # ==========================================
-
 @app.route('/licencias/crear', methods=['POST'])
 @login_required
 def crear_licencia():
-    tipo = request.form.get('tipo', 'KeySystem')
     clave = request.form.get('clave', '').strip()
-    owner = request.form.get('owner', '').strip()
+    owner = request.form.get('owner', 'Auto-Añadido').strip()
     duracion = request.form.get('duracion', 'Permanent')
     notas = request.form.get('notes', '').strip()
-    
-    if tipo == 'KeySystem' and not clave:
-        clave = generate_license_key()
-    elif not clave:
-        flash("Debe ingresar un identificador para Whitelist.")
-        return redirect(url_for('panel'))
         
+    if not clave:
+        flash("Debe ingresar el usuario de Roblox para la Whitelist.")
+        return redirect(url_for('panel'))
+            
     existe = Licencia.query.filter_by(license_key=clave).first()
     if existe:
-        flash("La licencia o identificador ya existe.")
+        flash("El usuario ya existe en la Whitelist.")
         return redirect(url_for('panel'))
-        
-    expires_at = parse_duration(duracion) 
-        
+            
+    expires_at = parse_duration(duracion)
+            
     nueva = Licencia(
         license_key=clave, 
         owner=owner,
-        license_type=tipo, 
+        license_type="Whitelist", # Estructurado directamente como Whitelist
         status="ACTIVE",
         expires_at=expires_at,
         notes=notas
     )
     db.session.add(nueva)
     db.session.commit()
-    flash("Licencia creada correctamente.")
+    flash("Usuario añadido a la Whitelist correctamente.")
     return redirect(url_for('panel'))
-
 
 @app.route("/licencias/editar/<int:id>", methods=["POST"])
 @login_required
 def editar_licencia(id):
     licencia = Licencia.query.get_or_404(id)
-
     licencia.owner = request.form.get("owner", "").strip()
     licencia.notes = request.form.get("notes", "").strip()
-    licencia.license_type = request.form.get("tipo", "KeySystem")
     duracion = request.form.get("duracion", "Permanent")
-
-    # Calcula la fecha a partir de cuando fue creada, evitando el reinicio
+        
     licencia.expires_at = parse_duration(duracion, base_date=licencia.created_at)
-
     update_license_status(licencia)
     db.session.commit()
-    flash("Licencia actualizada correctamente.")
+    flash("Whitelist actualizada correctamente.")
     return redirect(url_for("panel"))
-
 
 @app.route('/licencias/revocar/<int:id>', methods=['POST'])
 @login_required
@@ -352,16 +309,15 @@ def revocar_licencia(id):
     lic = Licencia.query.get_or_404(id)
     if lic.status == "REVOKED":
         lic.status = "ACTIVE"
-        lic.revoked_at = None # Limpiamos la fecha si la reactivamos
+        lic.revoked_at = None
         update_license_status(lic) 
     else:
         lic.status = "REVOKED"
-        lic.revoked_at = datetime.utcnow() # Registramos cuándo fue revocada
-        
+        lic.revoked_at = datetime.utcnow()
+            
     db.session.commit()
-    flash("Estado de la licencia actualizado.")
+    flash("Estado del acceso actualizado.")
     return redirect(url_for('panel'))
-
 
 @app.route('/licencias/eliminar/<int:id>', methods=['POST'])
 @login_required
@@ -369,83 +325,48 @@ def eliminar_licencia(id):
     lic = Licencia.query.get_or_404(id)
     db.session.delete(lic)
     db.session.commit()
-    flash("Licencia eliminada de forma permanente.")
+    flash("Usuario eliminado de forma permanente.")
     return redirect(url_for('panel'))
-
-
-@app.route('/licencias/<int:id>', methods=['GET'])
-@login_required
-def obtener_licencia(id):
-    lic = Licencia.query.get_or_404(id)
-    return jsonify({
-        "id": lic.id,
-        "license_key": lic.license_key,
-        "owner": lic.owner,
-        "license_type": lic.license_type,
-        "status": lic.status,
-        "created_at": lic.created_at.isoformat() if lic.created_at else None,
-        "expires_at": lic.expires_at.isoformat() if lic.expires_at else None,
-        "last_used": lic.last_used.isoformat() if lic.last_used else None,
-        "last_ip": lic.last_ip,
-        "total_uses": lic.total_uses,
-        "hwid": lic.hwid,
-        "revoked_at": lic.revoked_at.isoformat() if lic.revoked_at else None,
-        "notes": lic.notes
-    })
-
 
 # ==========================================
 # API DE INYECCIÓN (ROBLOX / LUA)
 # ==========================================
-
 @app.route('/api/load', methods=['GET'])
 def load_script():
     uid = request.args.get('uid')
     user = request.args.get('user')
-    key = request.args.get('key')
     ip_address = request.remote_addr
-    
+        
     if uid and user:
         nueva_ejecucion = EjecucionScript(roblox_username=user, universe_id=uid, ip_address=ip_address)
         db.session.add(nueva_ejecucion)
-        
+            
     acceso_permitido = False
     licencia_activa = None
-    
-    # Check Whitelist
+        
+    # Verificación Exclusiva de Whitelist
     if user:
         lic_whitelist = Licencia.query.filter_by(license_key=user, license_type="Whitelist").first()
         if lic_whitelist:
             update_license_status(lic_whitelist)
-            db.session.flush() # Sincroniza el cambio (ej. de ACTIVE a EXPIRED) antes del if
+            db.session.flush() 
             if lic_whitelist.status == "ACTIVE":
                 acceso_permitido = True
                 licencia_activa = lic_whitelist
-            
-    # Check KeySystem (si no pasó Whitelist)
-    if not acceso_permitido and key:
-        lic_key = Licencia.query.filter_by(license_key=key, license_type="KeySystem").first()
-        if lic_key:
-            update_license_status(lic_key)
-            db.session.flush() # Sincroniza el cambio (ej. de ACTIVE a EXPIRED) antes del if
-            if lic_key.status == "ACTIVE":
-                acceso_permitido = True
-                licencia_activa = lic_key
-            
+                    
     if not acceso_permitido:
-        db.session.commit() # Guardamos la telemetría aunque falle
-        return 'warn("SilentHub: ACCESO DENEGADO - Licencia invalida, revocada o expirada.")', 403
-        
-    # Registrar uso de la licencia y añadir +1 a total_uses
+        db.session.commit() 
+        return 'warn("SilentHub: ACCESO DENEGADO - El usuario no esta en la Whitelist o el acceso ha expirado.")', 403
+            
     if licencia_activa:
         licencia_activa.last_used = datetime.utcnow()
         licencia_activa.last_ip = ip_address
         licencia_activa.total_uses += 1
-    
-    db.session.commit()
         
+    db.session.commit()
+            
     ruta_script = os.path.join(os.path.dirname(__file__), 'scripts', 'main.lua')
-    
+        
     if os.path.exists(ruta_script):
         with open(ruta_script, 'r', encoding='utf-8') as archivo:
             codigo_lua = archivo.read()
