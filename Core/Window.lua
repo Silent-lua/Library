@@ -182,12 +182,22 @@ function Window.New(options)
                 PaddingRight = UDim.new(0, 10), PaddingBottom = UDim.new(0, 10)
             })
         })
+        
+        -- MÉTODOS DE CREACIÓN INYECTADOS EN LA PESTAÑA
+        function TabObj:CreateButton(opts)
+            return Elements.CreateButton(self.Content, opts)
+        end
+        function TabObj:CreateToggle(opts)
+            return Elements.CreateToggle(self.Content, opts)
+        end
+        function TabObj:CreateSlider(opts)
+            return Elements.CreateSlider(self.Content, opts)
+        end
+        -- NUEVO: Dropdown
+        function TabObj:CreateDropdown(opts)
+            return Elements.CreateDropdown(self.Content, opts)
+        end
 
-        local TabObj = {
-            Button = tabButton,
-            Content = tabContent,
-            Name = tabName
-        }
 
         -- MÉTODOS DE CREACIÓN INYECTADOS EN LA PESTAÑA
         function TabObj:CreateButton(opts)
