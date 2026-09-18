@@ -119,7 +119,18 @@ function Window.New(options)
             Position = UDim2.new(1, -8, 0, 0),
             BorderSizePixel = 0,
             ThemeTag = { BackgroundColor3 = "Panel" }
-        }),
+        })
+    })
+
+    -- NUEVO: Contenedor interior solo para los botones (Fix del Layout)
+    local tabContainer = Creator.New("ScrollingFrame", {
+        Name = "TabContainer",
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1,
+        ScrollBarThickness = 0,
+        BorderSizePixel = 0,
+        Parent = sidebar
+    }, {
         Creator.New("UIListLayout", {
             SortOrder = Enum.SortOrder.LayoutOrder,
             Padding = UDim.new(0, 4)
@@ -127,11 +138,12 @@ function Window.New(options)
         Creator.New("UIPadding", {
             PaddingTop = UDim.new(0, 10),
             PaddingLeft = UDim.new(0, 10),
-            PaddingRight = UDim.new(0, 10)
+            PaddingRight = UDim.new(0, 10),
+            PaddingBottom = UDim.new(0, 10)
         })
     })
 
-    -- Contenedor de Contenido (Donde van las pestañas)
+    -- Contenedor de Contenido (Donde van los elementos de las pestañas)
     local contentContainer = Creator.New("Frame", {
         Name = "ContentContainer",
         Size = UDim2.new(1, -140, 1, -40),
@@ -146,7 +158,8 @@ function Window.New(options)
         GUI = screenGui,
         Main = mainFrame,
         Sidebar = sidebar,
-        Container = contentContainer,
+        TabContainer = tabContainer,
+        ContentContainer = contentContainer,
         Tabs = {},
         CurrentTab = nil
     }
@@ -163,7 +176,7 @@ function Window.New(options)
             Font = Enum.Font.GothamMedium,
             TextSize = 13,
             AutoButtonColor = false,
-            Parent = self.Sidebar,
+            Parent = self.TabContainer, -- Asignado al nuevo contenedor seguro
             ThemeTag = { TextColor3 = "TextMuted" }
         }, {
             Creator.New("UICorner", { CornerRadius = UDim.new(0, 6) })
@@ -175,7 +188,7 @@ function Window.New(options)
             ScrollBarThickness = 2,
             BorderSizePixel = 0,
             Visible = false,
-            Parent = self.Container,
+            Parent = self.ContentContainer,
             ThemeTag = { ScrollBarImageColor3 = "Border" }
         }, {
             Creator.New("UIListLayout", {
@@ -215,7 +228,6 @@ function Window.New(options)
             tab.Content.Visible = false
             -- Reiniciamos estilos de los botones inactivos
             Tween(tab.Button, nil, { BackgroundTransparency = 1 })
-            tab.Button.TextColor3 = ThemeManager.GetColor("TextMuted")
             ThemeManager.Register(tab.Button, { TextColor3 = "TextMuted" })
         end
 
