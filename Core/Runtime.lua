@@ -1,17 +1,16 @@
 -- Silent Framework | Core/Runtime.lua
--- Responsabilidad: Estado global, inyección segura de UI y ejecución protegida de callbacks.
+-- Responsabilidad: Estado global, inyección segura de UI y ejecución protegida.
 
-local Services = require(script.Parent.Services)
-local CoreGui = Services.CoreGui
-local RunService = Services.RunService
+local Services = nil
 
 local Runtime = {
     Debug = false,
-    State = {
-        IsLoaded = false,
-        IsWindowCreated = false
-    }
+    State = { IsLoaded = false, IsWindowCreated = false }
 }
+
+function Runtime.InitDependencies(servicesModule)
+    Services = servicesModule
+end
 
 function Runtime.SetDebug(state)
     Runtime.Debug = state == true
@@ -27,10 +26,8 @@ function Runtime.Log(message, isWarning)
     end
 end
 
--- Ejecuta funciones de usuario evitando que errores rompan el framework
 function Runtime.CallSafely(callback, ...)
     if type(callback) ~= "function" then return false, "Not a function" end
-    
     local args = {...}
     local success, result = xpcall(
         function() return callback(unpack(args)) end,
@@ -43,9 +40,10 @@ function Runtime.CallSafely(callback, ...)
     return success, result
 end
 
--- Busca el mejor contenedor para esconder la UI del juego (Anti-Cheat Bypass)
 function Runtime.GetSafeParent()
     local targetParent = nil
+    local CoreGui = Services.CoreGui
+    local RunService = Services.RunService
     
     if not RunService:IsStudio() then
         if gethui then
@@ -65,7 +63,7 @@ function Runtime.GetSafeParent()
 end
 
 function Runtime.ProtectGui(guiInstance)
-    if not RunService:IsStudio() and syn and syn.protect_gui then
+    if not Services.RunService:IsStudio() and syn and syn.protect_gui then
         pcall(function() syn.protect_gui(guiInstance) end)
     end
     guiInstance.Parent = Runtime.GetSafeParent()
