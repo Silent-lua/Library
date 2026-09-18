@@ -1,5 +1,5 @@
 -- Silent Framework | init.lua (Network Bootstrapper v2.0)
--- Responsabilidad: Resolución de dependencias, cacheo, y peticiones HTTP seguras con Timeout.
+-- Responsabilidad: Resolución de dependencias, cacheo, y peticiones HTTP seguras.
 
 if getgenv().SilentFramework_Loaded then
     return getgenv().SilentFramework_API
@@ -7,20 +7,18 @@ end
 
 local Silent = {
     Version = "Beta",
-    Build = "Owner:BySilent",
+    Build = "BySilent",
     Repo_URL = "https://raw.githubusercontent.com/Silent-lua/Library/main/"
 }
 
 local ModuleCache = {}
 
--- Detección de capacidades del ejecutor (Inspirado en Rayfield y Snowy Hub)
 Silent.Capabilities = {
     FileSystem = (readfile ~= nil and writefile ~= nil and isfolder ~= nil),
     Clipboard = (setclipboard ~= nil or toclipboard ~= nil),
     Http = (request ~= nil or syn and syn.request ~= nil or http and http.request ~= nil)
 }
 
--- Función de Carga con Tolerancia a Fallos (Timeout)
 local function LoadWithTimeout(url, timeout)
     timeout = timeout or 5
     local requestCompleted, success, result = false, false, nil
@@ -39,7 +37,7 @@ local function LoadWithTimeout(url, timeout)
 
     local timeoutThread = task.delay(timeout, function()
         if not requestCompleted then
-            warn(string.format("[Silent:Loader] Request for %s timed out after %d seconds.", url, timeout))
+            warn(string.format("[Silent:Loader] Request for %s timed out.", url))
             task.cancel(requestThread)
             result = "Request timed out"
             requestCompleted = true
@@ -59,7 +57,7 @@ local function Import(path)
     local success, moduleFunction = LoadWithTimeout(url, 7)
 
     if not success or not moduleFunction then
-        error(string.format("[Silent:Loader] Failed to fetch/parse module '%s': %s", path, tostring(moduleFunction)), 2)
+        error(string.format("[Silent:Loader] Failed to fetch/parse module '%s'. Check URL.", path), 2)
     end
 
     local moduleData = moduleFunction()
@@ -68,22 +66,31 @@ local function Import(path)
 end
 
 -- Carga del Core
-local Services = Import("Core/Services")
-local Runtime  = Import("Core/Runtime")
-local Cleanup  = Import("Core/Cleanup")
-local Signal   = Import("Core/Signal")
-local Tween    = Import("Core/Tween")
-local Creator  = Import("Core/Creator")
+local Services     = Import("Core/Services")
+local Runtime      = Import("Core/Runtime")
+local Cleanup      = Import("Core/Cleanup")
+local Signal       = Import("Core/Signal")
+local Tween        = Import("Core/Tween")
+local ThemeManager = Import("Core/ThemeManager")
+local Creator      = Import("Core/Creator")
+
+-- Inyección de Dependencias Cruzadas
+ThemeManager.InitDependencies(Tween.Play)
 
 Silent.Services = Services
 Silent.Runtime = Runtime
 Silent.Cleanup = Cleanup
 Silent.Signal = Signal
 Silent.Tween = Tween.Play
+Silent.Theme = ThemeManager
 Silent.Creator = Creator
 
 function Silent:SetDebug(state)
     self.Runtime.SetDebug(state)
+end
+
+function Silent:SetTheme(themeName)
+    self.Theme.SetTheme(themeName)
 end
 
 function Silent:Init()
@@ -91,7 +98,7 @@ function Silent:Init()
     self.Runtime.UpdateState("IsLoaded", true)
     
     if self.Runtime.Debug then
-        print("[Silent] Enterprise Framework Initialized.")
+        print("MainSilent")
     end
 end
 
