@@ -1,20 +1,20 @@
 -- Silent Framework | Core/Window.lua
 -- Responsabilidad: Construcción de la interfaz principal, sistema de arrastre y gestión de pestañas.
 
-local Services, Creator, ThemeManager, Tween, Runtime
+local Services, Creator, ThemeManager, Tween, Runtime, Elements
 
 local Window = {}
 
--- Inyección de Dependencias
-function Window.InitDependencies(servicesModule, creatorModule, themeModule, tweenModule, runtimeModule)
+-- Inyección de Dependencias (NUEVO: Elements)
+function Window.InitDependencies(servicesModule, creatorModule, themeModule, tweenModule, runtimeModule, elementsModule)
     Services = servicesModule
     Creator = creatorModule
     ThemeManager = themeModule
     Tween = tweenModule
     Runtime = runtimeModule
+    Elements = elementsModule
 end
 
--- Lógica de arrastre suave (Smooth Dragging)
 local function MakeDraggable(dragArea, targetFrame)
     local UserInputService = Services.UserInputService
     local dragging, dragInput, dragStart, startPos
@@ -65,7 +65,6 @@ function Window.New(options)
     })
     Runtime.ProtectGui(screenGui)
 
-    -- Marco Principal
     local mainFrame = Creator.New("Frame", {
         Name = "MainFrame",
         Size = size,
@@ -78,7 +77,6 @@ function Window.New(options)
         Creator.New("UIStroke", { Thickness = 1, ThemeTag = { Color = "Border" } })
     })
 
-    -- Barra Superior (Topbar)
     local topbar = Creator.New("Frame", {
         Name = "Topbar",
         Size = UDim2.new(1, 0, 0, 40),
@@ -104,7 +102,6 @@ function Window.New(options)
         })
     })
 
-    -- Barra Lateral (Sidebar para Tabs)
     local sidebar = Creator.New("Frame", {
         Name = "Sidebar",
         Size = UDim2.new(0, 140, 1, -40),
@@ -114,7 +111,7 @@ function Window.New(options)
         ThemeTag = { BackgroundColor3 = "Panel" }
     }, {
         Creator.New("UICorner", { CornerRadius = UDim.new(0, 8) }),
-        Creator.New("Frame", { -- Ocultar la esquina derecha para que se fusione con el contenido
+        Creator.New("Frame", {
             Size = UDim2.new(0, 8, 1, 0),
             Position = UDim2.new(1, -8, 0, 0),
             BorderSizePixel = 0,
@@ -122,7 +119,6 @@ function Window.New(options)
         })
     })
 
-    -- NUEVO: Contenedor interior solo para los botones (Fix del Layout)
     local tabContainer = Creator.New("ScrollingFrame", {
         Name = "TabContainer",
         Size = UDim2.new(1, 0, 1, 0),
@@ -131,19 +127,13 @@ function Window.New(options)
         BorderSizePixel = 0,
         Parent = sidebar
     }, {
-        Creator.New("UIListLayout", {
-            SortOrder = Enum.SortOrder.LayoutOrder,
-            Padding = UDim.new(0, 4)
-        }),
+        Creator.New("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 4) }),
         Creator.New("UIPadding", {
-            PaddingTop = UDim.new(0, 10),
-            PaddingLeft = UDim.new(0, 10),
-            PaddingRight = UDim.new(0, 10),
-            PaddingBottom = UDim.new(0, 10)
+            PaddingTop = UDim.new(0, 10), PaddingLeft = UDim.new(0, 10),
+            PaddingRight = UDim.new(0, 10), PaddingBottom = UDim.new(0, 10)
         })
     })
 
-    -- Contenedor de Contenido (Donde van los elementos de las pestañas)
     local contentContainer = Creator.New("Frame", {
         Name = "ContentContainer",
         Size = UDim2.new(1, -140, 1, -40),
@@ -164,10 +154,7 @@ function Window.New(options)
         CurrentTab = nil
     }
 
-    -- Método para crear pestañas
     function WindowObj:CreateTab(tabName)
-        local tabId = "Tab_" .. tostring(tabName)
-        
         local tabButton = Creator.New("TextButton", {
             Size = UDim2.new(1, 0, 0, 32),
             BackgroundColor3 = Color3.new(1,1,1),
@@ -176,11 +163,9 @@ function Window.New(options)
             Font = Enum.Font.GothamMedium,
             TextSize = 13,
             AutoButtonColor = false,
-            Parent = self.TabContainer, -- Asignado al nuevo contenedor seguro
+            Parent = self.TabContainer,
             ThemeTag = { TextColor3 = "TextMuted" }
-        }, {
-            Creator.New("UICorner", { CornerRadius = UDim.new(0, 6) })
-        })
+        }, { Creator.New("UICorner", { CornerRadius = UDim.new(0, 6) }) })
 
         local tabContent = Creator.New("ScrollingFrame", {
             Size = UDim2.new(1, 0, 1, 0),
@@ -191,15 +176,10 @@ function Window.New(options)
             Parent = self.ContentContainer,
             ThemeTag = { ScrollBarImageColor3 = "Border" }
         }, {
-            Creator.New("UIListLayout", {
-                SortOrder = Enum.SortOrder.LayoutOrder,
-                Padding = UDim.new(0, 6)
-            }),
+            Creator.New("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 6) }),
             Creator.New("UIPadding", {
-                PaddingTop = UDim.new(0, 10),
-                PaddingLeft = UDim.new(0, 10),
-                PaddingRight = UDim.new(0, 10),
-                PaddingBottom = UDim.new(0, 10)
+                PaddingTop = UDim.new(0, 10), PaddingLeft = UDim.new(0, 10),
+                PaddingRight = UDim.new(0, 10), PaddingBottom = UDim.new(0, 10)
             })
         })
 
@@ -209,16 +189,20 @@ function Window.New(options)
             Name = tabName
         }
 
-        tabButton.MouseButton1Click:Connect(function()
-            self:SelectTab(TabObj)
-        end)
-
-        table.insert(self.Tabs, TabObj)
-        
-        -- Si es la primera pestaña, la seleccionamos automáticamente
-        if #self.Tabs == 1 then
-            self:SelectTab(TabObj)
+        -- MÉTODOS DE CREACIÓN INYECTADOS EN LA PESTAÑA
+        function TabObj:CreateButton(opts)
+            return Elements.CreateButton(self.Content, opts)
         end
+        function TabObj:CreateToggle(opts)
+            return Elements.CreateToggle(self.Content, opts)
+        end
+        function TabObj:CreateSlider(opts)
+            return Elements.CreateSlider(self.Content, opts)
+        end
+
+        tabButton.MouseButton1Click:Connect(function() self:SelectTab(TabObj) end)
+        table.insert(self.Tabs, TabObj)
+        if #self.Tabs == 1 then self:SelectTab(TabObj) end
 
         return TabObj
     end
@@ -226,19 +210,13 @@ function Window.New(options)
     function WindowObj:SelectTab(tabObj)
         for _, tab in ipairs(self.Tabs) do
             tab.Content.Visible = false
-            -- Reiniciamos estilos de los botones inactivos
             Tween(tab.Button, nil, { BackgroundTransparency = 1 })
             ThemeManager.Register(tab.Button, { TextColor3 = "TextMuted" })
         end
 
-        -- Activamos la pestaña seleccionada
         tabObj.Content.Visible = true
-        ThemeManager.Register(tabObj.Button, {
-            BackgroundColor3 = "Accent",
-            TextColor3 = "Background"
-        })
+        ThemeManager.Register(tabObj.Button, { BackgroundColor3 = "Accent", TextColor3 = "Background" })
         Tween(tabObj.Button, nil, { BackgroundTransparency = 0 })
-        
         self.CurrentTab = tabObj
     end
 
