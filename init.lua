@@ -1,13 +1,12 @@
--- Silent Framework | init.lua (Network Bootstrapper v2.0)
--- Responsabilidad: Resolución de dependencias, cacheo, y peticiones HTTP seguras.
+-- Silent Framework | init.lua (Network Bootstrapper v3.0)
 
 if getgenv().SilentFramework_Loaded then
     return getgenv().SilentFramework_API
 end
 
 local Silent = {
-    Version = "2.0.0-ENTERPRISE",
-    Build = "FASE2-THEME-FIX",
+    Version = "3.0.0-ENTERPRISE",
+    Build = "FASE3-WINDOW",
     Repo_URL = "https://raw.githubusercontent.com/Silent-lua/Library/main/"
 }
 
@@ -52,7 +51,6 @@ end
 
 local function Import(path)
     if ModuleCache[path] then return ModuleCache[path] end
-
     local url = Silent.Repo_URL .. path .. ".lua"
     local success, moduleFunction = LoadWithTimeout(url, 7)
 
@@ -73,12 +71,14 @@ local Signal       = Import("Core/Signal")
 local Tween        = Import("Core/Tween")
 local ThemeManager = Import("Core/ThemeManager")
 local Creator      = Import("Core/Creator")
+local Window       = Import("Core/Window")
 
--- INYECCIÓN DE DEPENDENCIAS (ELIMINA EL ERROR DE REQUIRE)
+-- Inyección de Dependencias
 Runtime.InitDependencies(Services)
 Tween.InitDependencies(Services)
 Creator.InitDependencies(ThemeManager)
 ThemeManager.InitDependencies(Tween.Play)
+Window.InitDependencies(Services, Creator, ThemeManager, Tween.Play, Runtime)
 
 Silent.Services = Services
 Silent.Runtime = Runtime
@@ -87,6 +87,7 @@ Silent.Signal = Signal
 Silent.Tween = Tween.Play
 Silent.Theme = ThemeManager
 Silent.Creator = Creator
+Silent.Window = Window
 
 function Silent:SetDebug(state)
     self.Runtime.SetDebug(state)
@@ -96,13 +97,17 @@ function Silent:SetTheme(themeName)
     self.Theme.SetTheme(themeName)
 end
 
+-- Constructor principal para el usuario final
+function Silent:CreateWindow(options)
+    if not self.Runtime.State.IsLoaded then
+        self:Init()
+    end
+    return self.Window.New(options)
+end
+
 function Silent:Init()
     if self.Runtime.State.IsLoaded then return end
     self.Runtime.UpdateState("IsLoaded", true)
-    
-    if self.Runtime.Debug then
-        print("[Silent] Enterprise Framework Initialized (Phase 2).")
-    end
 end
 
 getgenv().SilentFramework_Loaded = true
