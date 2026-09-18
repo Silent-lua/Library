@@ -6,9 +6,9 @@ if getgenv().SilentFramework_Loaded then
 end
 
 local Silent = {
-    Version = "2.0.0-ENTERPRISE",
-    Build = "CORE-NETWORKED-V2",
-    Repo_URL = "https://raw.githubusercontent.com/TuUsuario/SilentFramework/main/"
+    Version = "Beta",
+    Build = "Owner:BySilent",
+    Repo_URL = "https://raw.githubusercontent.com/Silent-lua/Library/main/"
 }
 
 local ModuleCache = {}
