@@ -4,7 +4,7 @@ local __loading = {}
 local __utility = {}
 local __themes = {}
 
-__modules[[[components.action]]] = function()
+__modules[[components.action]] = function()
 
 
 local Action = {}
