@@ -51,7 +51,7 @@ end
 
 local function Import(path)
     if ModuleCache[path] then return ModuleCache[path] end
-    local url = Silent.Repo_URL .. path .. ".lua"
+    local url = Silent.Repo_URL .. path .. ".lua?t=" .. tostring(math.random(100000, 999999))
     local success, moduleFunction = LoadWithTimeout(url, 7)
 
     if not success or not moduleFunction then
