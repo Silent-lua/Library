@@ -6,8 +6,8 @@ if getgenv().SilentFramework_Loaded then
 end
 
 local Silent = {
-    Version = "Beta",
-    Build = "BySilent",
+    Version = "2.0.0-ENTERPRISE",
+    Build = "FASE2-THEME-FIX",
     Repo_URL = "https://raw.githubusercontent.com/Silent-lua/Library/main/"
 }
 
@@ -74,7 +74,10 @@ local Tween        = Import("Core/Tween")
 local ThemeManager = Import("Core/ThemeManager")
 local Creator      = Import("Core/Creator")
 
--- Inyección de Dependencias Cruzadas
+-- INYECCIÓN DE DEPENDENCIAS (ELIMINA EL ERROR DE REQUIRE)
+Runtime.InitDependencies(Services)
+Tween.InitDependencies(Services)
+Creator.InitDependencies(ThemeManager)
 ThemeManager.InitDependencies(Tween.Play)
 
 Silent.Services = Services
@@ -98,7 +101,7 @@ function Silent:Init()
     self.Runtime.UpdateState("IsLoaded", true)
     
     if self.Runtime.Debug then
-        print("MainSilent")
+        print("[Silent] Enterprise Framework Initialized (Phase 2).")
     end
 end
 
