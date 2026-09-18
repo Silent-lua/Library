@@ -1,12 +1,12 @@
--- Silent Framework | init.lua (Network Bootstrapper v3.0)
+-- Silent Framework | init.lua (Network Bootstrapper v4.0)
 
 if getgenv().SilentFramework_Loaded then
     return getgenv().SilentFramework_API
 end
 
 local Silent = {
-    Version = "3.0.0-ENTERPRISE",
-    Build = "FASE3-WINDOW",
+    Version = "4.0.0-ENTERPRISE",
+    Build = "FASE4-COMPONENTS",
     Repo_URL = "https://raw.githubusercontent.com/Silent-lua/Library/main/"
 }
 
@@ -71,6 +71,7 @@ local Signal       = Import("Core/Signal")
 local Tween        = Import("Core/Tween")
 local ThemeManager = Import("Core/ThemeManager")
 local Creator      = Import("Core/Creator")
+local Elements     = Import("Core/Elements")
 local Window       = Import("Core/Window")
 
 -- Inyección de Dependencias
@@ -78,7 +79,8 @@ Runtime.InitDependencies(Services)
 Tween.InitDependencies(Services)
 Creator.InitDependencies(ThemeManager)
 ThemeManager.InitDependencies(Tween.Play)
-Window.InitDependencies(Services, Creator, ThemeManager, Tween.Play, Runtime)
+Elements.InitDependencies(Services, Creator, ThemeManager, Tween.Play, Runtime)
+Window.InitDependencies(Services, Creator, ThemeManager, Tween.Play, Runtime, Elements)
 
 Silent.Services = Services
 Silent.Runtime = Runtime
@@ -97,11 +99,8 @@ function Silent:SetTheme(themeName)
     self.Theme.SetTheme(themeName)
 end
 
--- Constructor principal para el usuario final
 function Silent:CreateWindow(options)
-    if not self.Runtime.State.IsLoaded then
-        self:Init()
-    end
+    if not self.Runtime.State.IsLoaded then self:Init() end
     return self.Window.New(options)
 end
 
