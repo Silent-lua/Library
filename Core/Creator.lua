@@ -1,8 +1,12 @@
 -- Silent Framework | Core/Creator.lua
 -- Responsabilidad: Instanciación limpia y puente de automatización con ThemeManager.
 
-local ThemeManager = require(script.Parent.ThemeManager)
+local ThemeManager = nil
 local Creator = {}
+
+function Creator.InitDependencies(themeModule)
+    ThemeManager = themeModule
+end
 
 function Creator.New(className, properties, children)
     local success, instance = pcall(Instance.new, className)
@@ -17,7 +21,7 @@ function Creator.New(className, properties, children)
             if key == "ThemeTag" then
                 themeTags = value
             elseif key == "Parent" then
-                continue -- Retrasamos la asignación del Parent por performance
+                continue
             elseif type(value) == "function" and string.sub(key, 1, 2) == "On" then
                 local eventName = string.sub(key, 3)
                 if instance[eventName] then
@@ -41,8 +45,7 @@ function Creator.New(className, properties, children)
         instance.Parent = properties.Parent
     end
 
-    -- FASE 2: Si el componente solicitó tematización, lo registramos automáticamente.
-    if themeTags and type(themeTags) == "table" then
+    if themeTags and type(themeTags) == "table" and ThemeManager then
         ThemeManager.Register(instance, themeTags)
     end
 
