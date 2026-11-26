@@ -5,14 +5,15 @@
 -- Public entry points:
 --   SilentHub.CreateWindow(options) / SilentHub.Window(options)
 --   window:Tab(options), window:Toggle(), window:Notify(), window:Dialog()
+--   window:SetBackgroundImage(image), SilentHub:SetTheme(palette)
+--   Window options: Fullscreen, StartHidden, BackgroundImage, BackgroundImageTransparency
 --   tab:Section(), tab:Button(), tab:Toggle(), tab:Slider(), tab:Stepper()
 --   tab:Dropdown(), tab:Input(), tab:Keybind(), tab:ColorPicker()
 --   tab:Progress(), tab:Paragraph(), tab:Label(), tab:Divider()
 --   CreateWindow({ Title = "...", SubTitle = "...", Logo = "rbxassetid://..." })
 --   Logo is optional; the default SilentHub asset is used when omitted.
 --
--- The implementation remains behaviour-compatible with the original SilentHub
--- release; this repository applies formatting and API documentation only.
+-- Theme and background APIs are shared by all windows created from this library.
 
 local T = game:GetService("TweenService")
 local q = game:GetService("UserInputService")
@@ -229,6 +230,123 @@ f.Fonts = {
 	Bold = Font.new(J, Enum.FontWeight.SemiBold),
 }
 local a = f.Theme
+local an
+local backgroundImageCache = {}
+
+-- Apply one shared palette to every existing and future window.
+function f:SetTheme(palette)
+	if type(palette) ~= "table" then
+		return false, "Theme must be a table."
+	end
+	local previous = {}
+	for key, value in pairs(a) do
+		previous[key] = value
+	end
+	for key, value in pairs(palette) do
+		if previous[key] ~= nil and typeof(value) == "Color3" then
+			a[key] = value
+		end
+	end
+	if an then
+		an.Success, an.Warning, an.Error = a.Success, a.Warning, a.Error
+	end
+	local colorProperties = { "BackgroundColor3", "TextColor3", "ImageColor3", "ScrollBarImageColor3", "BorderColor3", "Color" }
+	for _, window in ipairs(f.Windows) do
+		if window.Gui and window.Gui.Parent then
+			for _, object in ipairs(window.Gui:GetDescendants()) do
+				for _, propertyName in ipairs(colorProperties) do
+					local ok, current = pcall(function()
+						return object[propertyName]
+					end)
+					if ok and typeof(current) == "Color3" then
+						for key, oldColor in pairs(previous) do
+							if current == oldColor and a[key] ~= oldColor then
+								pcall(function()
+									object[propertyName] = a[key]
+								end)
+								break
+							end
+						end
+					elseif ok and typeof(current) == "ColorSequence" and propertyName == "Color" then
+						local updated, changed = {}, false
+						for _, point in ipairs(current.Keypoints) do
+							local color = point.Value
+							for key, oldColor in pairs(previous) do
+								if color == oldColor and a[key] ~= oldColor then
+									color = a[key]
+									changed = true
+									break
+								end
+							end
+							table.insert(updated, ColorSequenceKeypoint.new(point.Time, color))
+						end
+						if changed then
+							pcall(function()
+								object[propertyName] = ColorSequence.new(updated)
+							end)
+						end
+					end
+				end
+			end
+		end
+	end
+	return true
+end
+
+local function resolveBackgroundImage(value)
+	if value == nil or tostring(value):match("^%s*$") then
+		return nil
+	end
+	local image = tostring(value):gsub("^%s+", ""):gsub("%s+$", "")
+	if image:match("^%d+$") then
+		return "rbxassetid://" .. image
+	end
+	if image:match("^rbxassetid://") or image:match("^rbxasset://") then
+		return image
+	end
+	if not image:match("^https?://") then
+		return nil, "Use an asset ID, rbxassetid:// URI, or direct HTTPS image URL."
+	end
+	if backgroundImageCache[image] then
+		return backgroundImageCache[image]
+	end
+	local assetFunction = type(getcustomasset) == "function" and getcustomasset or getsynasset
+	if type(writefile) ~= "function" or type(assetFunction) ~= "function" then
+		return nil, "URL backgrounds need executor support for writefile and getcustomasset/getsynasset."
+	end
+	local extension = (image:match("%.([%w]+)[%?#]") or image:match("%.([%w]+)$") or "png"):lower()
+	if extension == "jpeg" then
+		extension = "jpg"
+	end
+	if extension ~= "png" and extension ~= "jpg" and extension ~= "webp" then
+		extension = "png"
+	end
+	if type(makefolder) == "function" then
+		pcall(function()
+			if type(isfolder) ~= "function" or not isfolder(CACHE) then
+				makefolder(CACHE)
+			end
+		end)
+	end
+	local path = CACHE .. "/background-image-" .. C:GenerateGUID(false) .. "." .. extension
+	local downloadOk, bytes = pcall(function()
+		return game:HttpGet(image)
+	end)
+	if not downloadOk or type(bytes) ~= "string" or #bytes == 0 then
+		return nil, "Could not download the image URL: " .. tostring(bytes)
+	end
+	local writeOk, writeError = pcall(writefile, path, bytes)
+	if not writeOk then
+		return nil, "Could not cache the image: " .. tostring(writeError)
+	end
+	local assetOk, asset = pcall(assetFunction, path)
+	if not assetOk or type(asset) ~= "string" then
+		return nil, "Could not convert the downloaded image into a local asset: " .. tostring(asset)
+	end
+	backgroundImageCache[image] = asset
+	return asset
+end
+
 local t = f.Assets
 local i = f.Fonts
 local m = q.TouchEnabled and not q.KeyboardEnabled
@@ -2313,7 +2431,7 @@ local function am(a)
 		a(c or "Unavailable")
 	end)
 end
-local an = { Success = a.Success, Warning = a.Warning, Error = a.Error }
+an = { Success = a.Success, Warning = a.Warning, Error = a.Error }
 local g = {}
 g.__index = g
 function f.Window(ab, k)
@@ -2322,12 +2440,14 @@ function f.Window(ab, k)
 	if type(k.Keybind) == "string" then
 		k.Keybind = Enum.KeyCode[k.Keybind]
 	end
-	local V = k.Size or UDim2.fromOffset(720, 540)
+	local V = k.Fullscreen and UDim2.new(1, -24, 1, -24) or k.Size or UDim2.fromOffset(720, 540)
 	local N = k.Keybind or Enum.KeyCode.RightControl
 	local j = setmetatable({
 		Tabs = {},
 		CurrentTab = nil,
-		Open = true,
+		Open = k.StartHidden ~= true,
+		Fullscreen = k.Fullscreen == true,
+		_startHidden = k.StartHidden == true,
 		Keybind = N,
 		_connections = {},
 		_controls = {},
@@ -2395,6 +2515,27 @@ function f.Window(ab, k)
 		Parent = z,
 	})
 	j.Body = n
+	j.BackgroundImageLabel = nil
+	j._backgroundImageTransparency = math.clamp(tonumber(k.BackgroundImageTransparency) or 0.24, 0, 1)
+	local initialBackground = k.BackgroundImage or k.Background
+	if initialBackground ~= nil then
+		local imageContent, imageError = resolveBackgroundImage(initialBackground)
+		if imageContent then
+			j.BackgroundImageLabel = c("ImageLabel", {
+				Name = "SharedBackgroundImage",
+				Size = UDim2.fromScale(1, 1),
+				BackgroundTransparency = 1,
+				Image = imageContent,
+				ImageTransparency = j._backgroundImageTransparency,
+				ScaleType = Enum.ScaleType.Crop,
+				ZIndex = 0,
+				Parent = n,
+			})
+			e(j.BackgroundImageLabel, UDim.new(0, 10))
+		elseif imageError then
+			warn("[SilentHub] background image unavailable: " .. tostring(imageError))
+		end
+	end
 	e(n, UDim.new(0, 10))
 	j.BodyStroke = h(n, a.Stroke)
 	M(n)
@@ -2522,6 +2663,29 @@ function f.Window(ab, k)
 		Parent = n,
 	})
 	j.Content = E
+	local function updateResponsiveLayout()
+		local viewportWidth = s.AbsoluteSize.X
+		local compact = viewportWidth < 560
+		local sidebarWidth = compact and math.clamp(math.floor(viewportWidth * 0.29), 96, 132) or 170
+		C.Size = UDim2.new(0, sidebarWidth, 1, 0)
+		sidebarDivider.Position = UDim2.new(0, sidebarWidth, 0, 28)
+		J.Size = UDim2.new(1, 0, 0, compact and 52 or 72)
+		X.Position = UDim2.fromOffset(compact and 12 or 22, compact and 12 or 27)
+		X.Size = UDim2.fromOffset(compact and 24 or 30, compact and 24 or 28)
+		titleLabel.Visible = not compact
+		subtitleLabel.Visible = not compact
+		v.Position = UDim2.fromOffset(0, compact and 60 or 80)
+		v.Size = UDim2.new(1, 0, 1, compact and -98 or -116)
+		tabsPadding.PaddingLeft = UDim.new(0, compact and 8 or 16)
+		tabsPadding.PaddingRight = UDim.new(0, compact and 8 or 16)
+		S.Position = UDim2.new(0, compact and 8 or 22, 1, compact and -30 or -36)
+		S.Size = UDim2.new(1, compact and -16 or -44, 0, 22)
+		Z.Visible = not compact
+		E.Position = UDim2.fromOffset(sidebarWidth + 1, 0)
+		E.Size = UDim2.new(1, -sidebarWidth - 1, 1, 0)
+	end
+	updateResponsiveLayout()
+	table.insert(j._connections, s:GetPropertyChangedSignal(I):Connect(updateResponsiveLayout))
 	j._outLayer = c(H, {
 		Name = "TransitionOut",
 		Size = UDim2.fromScale(1, 1),
@@ -2598,10 +2762,14 @@ function f.Window(ab, k)
 			j._controlsDirty = true
 		end)
 	)
-	j:_enableDrag()
+	if not j.Fullscreen and k.Draggable ~= false then
+		j:_enableDrag()
+	end
 	j.MaxSize = k.MaxSize
 	j.KeepOnScreen = k.KeepOnScreen ~= false
-	j:_enableResize(k.MinSize or Vector2.new(480, 360))
+	if not j.Fullscreen and k.Resizable ~= false then
+		j:_enableResize(k.MinSize or Vector2.new(480, 360))
+	end
 	local F = k.ConfigurationSaving
 	if type(F) == A and F.Enabled ~= false then
 		j.ConfigFolder = CACHE
@@ -2845,6 +3013,14 @@ function g:_playIntro(c)
 		ab(b._button, 0.1 + a * 0.05, true)
 	end
 	self.Indicator.Visible = false
+	if self._startHidden then
+		self.Open = false
+		self.Root.Visible = false
+		self.Body.GroupTransparency = 1
+		self.BodyStroke.Transparency = 1
+		self.Shadow.ImageTransparency = 1
+		self.Scale.Scale = self._fitScale or 1
+	end
 	task.delay(0.15 + #self.Tabs * 0.05, function()
 		if self.CurrentTab then
 			self:_placeIndicator(self.CurrentTab)
@@ -3006,6 +3182,17 @@ end
 function g:_fitToScreen(d)
 	local viewport = self.Gui.AbsoluteSize
 	if viewport.X <= 0 or viewport.Y <= 0 then
+		return
+	end
+	if self.Fullscreen then
+		self._fitScale = 1
+		if self._introDone and self.Open then
+			if d then
+				self.Scale.Scale = 1
+			else
+				b(self.Scale, { Scale = 1 }, 0.12)
+			end
+		end
 		return
 	end
 
@@ -4250,6 +4437,8 @@ function g:Toggle(a)
 	end
 	self.Open = a
 	if a then
+		f._nextDisplayOrder = math.max(f._nextDisplayOrder or 999, self.Gui.DisplayOrder or 999) + 1
+		self.Gui.DisplayOrder = f._nextDisplayOrder
 		self.Root.Visible = true
 		b(self.Scale, { Scale = self._fitScale or 1 }, 0.4, Enum.EasingStyle.Back)
 		b(self.Body, { GroupTransparency = 0 }, 0.25)
@@ -4266,6 +4455,35 @@ function g:Toggle(a)
 			end
 		end)
 	end
+end
+function g:SetBackgroundImage(value, transparency)
+	if value == nil or tostring(value):match("^%s*$") then
+		if self.BackgroundImageLabel then
+			self.BackgroundImageLabel:Destroy()
+			self.BackgroundImageLabel = nil
+		end
+		self._backgroundImage = nil
+		return true
+	end
+	local imageContent, imageError = resolveBackgroundImage(value)
+	if not imageContent then
+		return false, imageError or "Invalid background image."
+	end
+	if not self.BackgroundImageLabel or not self.BackgroundImageLabel.Parent then
+		self.BackgroundImageLabel = c("ImageLabel", {
+			Name = "SharedBackgroundImage",
+			Size = UDim2.fromScale(1, 1),
+			BackgroundTransparency = 1,
+			ScaleType = Enum.ScaleType.Crop,
+			ZIndex = 0,
+			Parent = self.Body,
+		})
+		e(self.BackgroundImageLabel, UDim.new(0, 10))
+	end
+	self.BackgroundImageLabel.Image = imageContent
+	self.BackgroundImageLabel.ImageTransparency = math.clamp(tonumber(transparency) or self._backgroundImageTransparency or 0.24, 0, 1)
+	self._backgroundImage = tostring(value)
+	return true
 end
 function g:SetKeepOnScreen(a)
 	self.KeepOnScreen = a ~= false
