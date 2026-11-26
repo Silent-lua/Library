@@ -15,7 +15,15 @@ end
 
 local function loadLibrary()
     local source
-    if type(isfile) == "function" and type(readfile) == "function" then
+    local downloadOk, downloaded = pcall(function() return game:HttpGet(LIBRARY_URL) end)
+
+    -- Check the published version first so an older cached copy cannot mask updates.
+    if downloadOk and type(downloaded) == "string" and #downloaded > 0 then
+        source = downloaded
+        ensureCache()
+        if type(writefile) == "function" then pcall(writefile, CACHE_FILE, source) end
+    elseif type(isfile) == "function" and type(readfile) == "function" then
+        -- Offline fallback: reuse the last successfully cached library.
         local ok, exists = pcall(isfile, CACHE_FILE)
         if ok and exists then
             local readOk, cached = pcall(readfile, CACHE_FILE)
@@ -24,13 +32,7 @@ local function loadLibrary()
     end
 
     if not source then
-        local ok, downloaded = pcall(function() return game:HttpGet(LIBRARY_URL) end)
-        if not ok or type(downloaded) ~= "string" or #downloaded == 0 then
-            error("SilentHub download failed: " .. tostring(downloaded))
-        end
-        source = downloaded
-        ensureCache()
-        if type(writefile) == "function" then pcall(writefile, CACHE_FILE, source) end
+        error("SilentHub download failed and no cached copy is available: " .. tostring(downloaded))
     end
 
     if type(loadstring) ~= "function" then error("loadstring is not available in this environment.") end
