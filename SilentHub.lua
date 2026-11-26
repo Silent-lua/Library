@@ -8,6 +8,8 @@
 --   tab:Section(), tab:Button(), tab:Toggle(), tab:Slider(), tab:Stepper()
 --   tab:Dropdown(), tab:Input(), tab:Keybind(), tab:ColorPicker()
 --   tab:Progress(), tab:Paragraph(), tab:Label(), tab:Divider()
+--   window:SetLogo(image) or options.Logo = image; default: SilentHub logo asset.
+--   Library.Assets.Logo can change the default for subsequently created windows.
 --
 -- The implementation remains behaviour-compatible with the original SilentHub
 -- release; this repository applies formatting and API documentation only.
@@ -97,7 +99,7 @@ f.Theme = {
 	Error = Color3.fromRGB(240, 120, 120),
 }
 f.Assets =
-	{ Shadow = "rbxassetid://6014261993", Glow = "rbxassetid://8992230677", Logo = "rbxassetid://103859712365480" }
+	{ Shadow = "rbxassetid://6014261993", Glow = "rbxassetid://8992230677", Logo = "rbxassetid://98486608340824" }
 local A
 local function I()
 	if A ~= nil then
@@ -2320,7 +2322,7 @@ function f.Window(ab, k)
 	if type(k.Keybind) == "string" then
 		k.Keybind = Enum.KeyCode[k.Keybind]
 	end
-	local V = k.Size or UDim2.fromOffset(640, 480)
+	local V = k.Size or UDim2.fromOffset(720, 540)
 	local N = k.Keybind or Enum.KeyCode.RightControl
 	local j = setmetatable({
 		Tabs = {},
@@ -2333,6 +2335,7 @@ function f.Window(ab, k)
 		_frameSteps = {},
 		_destroyed = false,
 	}, g)
+	j.Logo = k.Logo or k.Icon or t.Logo
 	local function B(a)
 		return function(...)
 			for b, a in ipairs(j._inputListeners[a]) do
@@ -2416,7 +2419,8 @@ function f.Window(ab, k)
 		ScaleType = Enum.ScaleType.Fit,
 		Parent = J,
 	})
-	u(X, k.Icon or t.Logo)
+	u(X, j.Logo)
+	j.LogoImage = X
 	d({
 		Position = UDim2.fromOffset(60, 25),
 		Size = UDim2.new(1, -70, 0, 20),
@@ -2894,7 +2898,8 @@ function g:_showLoader(g)
 		ScaleType = Enum.ScaleType.Fit,
 		Parent = q,
 	})
-	u(r, g.Icon or t.Logo)
+	u(r, g.Logo or g.Icon or self.Logo or t.Logo)
+	self._loaderLogoImage = r
 	task.delay(0.15, function()
 		b(r, { Size = UDim2.fromScale(0.85, 0.85), Rotation = 0, ImageTransparency = 0 }, 0.6, Enum.EasingStyle.Back)
 	end)
@@ -2999,13 +3004,21 @@ function g:_showLoader(g)
 	end)
 end
 function g:_fitToScreen(d)
-	local a = self.Gui.AbsoluteSize
-	if a.X == 0 or a.Y == 0 then
+	local viewport = self.Gui.AbsoluteSize
+	if viewport.X <= 0 or viewport.Y <= 0 then
 		return
 	end
-	local c = self.Root.Size
-	local e = math.min(1, (a.X - 24) / math.max(c.X.Offset, 1), (a.Y - 24) / math.max(c.Y.Offset, 1))
-	self._fitScale = math.max(e, 0.45)
+
+	-- Keep a 32 px safety margin for the window shadow and device edges.
+	-- AbsoluteSize includes the current UIScale, so divide it out to recover
+	-- the unscaled dimensions before calculating the next fit factor.
+	local currentScale = math.max(self.Scale.Scale, 0.001)
+	local baseSize = self.Root.AbsoluteSize / currentScale
+	local availableX = math.max(viewport.X - 64, 1)
+	local availableY = math.max(viewport.Y - 64, 1)
+	local fit = math.min(1, availableX / math.max(baseSize.X, 1), availableY / math.max(baseSize.Y, 1))
+	self._fitScale = math.clamp(fit, 0.001, 1)
+
 	if self._introDone and self.Open then
 		if d then
 			self.Scale.Scale = self._fitScale
@@ -3018,16 +3031,21 @@ function g:_clampToScreen()
 	if not self.KeepOnScreen then
 		return
 	end
-	local a = self.Gui.AbsoluteSize
-	local d = self.Root
-	local c = d.AbsoluteSize / 2
-	local e = d.AbsolutePosition + c - self.Gui.AbsolutePosition
-	local f = Vector2.new(
-		math.clamp(e.X, math.min(c.X, a.X / 2), math.max(a.X - c.X, a.X / 2)),
-		math.clamp(e.Y, math.min(c.Y, a.Y / 2), math.max(a.Y - c.Y, a.Y / 2))
+	local viewport = self.Gui.AbsoluteSize
+	local root = self.Root
+	local rootHalf = root.AbsoluteSize / 2
+	local center = root.AbsolutePosition + rootHalf - self.Gui.AbsolutePosition
+	local shadowMargin = 26 * math.max(self.Scale.Scale, 0.001) + 12
+	local boundHalfX = rootHalf.X + shadowMargin
+	local boundHalfY = rootHalf.Y + shadowMargin
+	local minX, maxX = boundHalfX, viewport.X - boundHalfX
+	local minY, maxY = boundHalfY, viewport.Y - boundHalfY
+	local target = Vector2.new(
+		maxX < minX and viewport.X / 2 or math.clamp(center.X, minX, maxX),
+		maxY < minY and viewport.Y / 2 or math.clamp(center.Y, minY, maxY)
 	)
-	if (f - e).Magnitude > 0.5 then
-		b(d, { Position = UDim2.fromOffset(f.X, f.Y) }, 0.25, Enum.EasingStyle.Quint)
+	if (target - center).Magnitude > 0.5 then
+		b(root, { Position = UDim2.fromOffset(target.X, target.Y) }, 0.25, Enum.EasingStyle.Quint)
 	end
 end
 function g:_createOpenButton(j)
@@ -3057,7 +3075,8 @@ function g:_createOpenButton(j)
 		ZIndex = 31,
 		Parent = b,
 	})
-	u(l, j.Icon or t.Logo)
+	u(l, j.Logo or j.Icon or self.Logo or t.Logo)
+	self.OpenButtonImage = l
 	d({
 		Position = UDim2.fromOffset(28, 0),
 		Size = UDim2.new(0, 0, 1, 0),
@@ -3171,8 +3190,16 @@ function g:_enableResize(i)
 		if not d then
 			return
 		end
-		local b = (r() - k) / self.Scale.Scale
-		e = Vector2.new(math.clamp(h.X.Offset + b.X * 2, i.X, j.X), math.clamp(h.Y.Offset + b.Y * 2, i.Y, j.Y))
+		local scale = math.max(self.Scale.Scale, 0.001)
+		local viewport = self.Gui.AbsoluteSize
+		local screenMax = Vector2.new(math.max(viewport.X - 64, 1), math.max(viewport.Y - 64, 1)) / scale
+		local maxAllowed = Vector2.new(math.min(j.X, screenMax.X), math.min(j.Y, screenMax.Y))
+		local minAllowed = Vector2.new(math.min(i.X, maxAllowed.X), math.min(i.Y, maxAllowed.Y))
+		local delta = (r() - k) / scale
+		e = Vector2.new(
+			math.clamp(h.X.Offset + delta.X * 2, minAllowed.X, maxAllowed.X),
+			math.clamp(h.Y.Offset + delta.Y * 2, minAllowed.Y, maxAllowed.Y)
+		)
 		local c = Vector2.new(self.Root.Size.X.Offset, self.Root.Size.Y.Offset)
 		local g = 1 - math.exp(-f * 35)
 		local a = c:Lerp(e, g)
@@ -4249,6 +4276,19 @@ end
 function g:SetKeybind(a)
 	self.Keybind = a
 	self._keyChipLabel.Text = P(a)
+end
+function g:SetLogo(a)
+	a = a or t.Logo
+	self.Logo = a
+	if self.LogoImage and self.LogoImage.Parent then
+		u(self.LogoImage, a)
+	end
+	if self.OpenButtonImage and self.OpenButtonImage.Parent then
+		u(self.OpenButtonImage, a)
+	end
+	if self._loaderLogoImage and self._loaderLogoImage.Parent then
+		u(self._loaderLogoImage, a)
+	end
 end
 function g:Notify(f)
 	local k = "Frame"
