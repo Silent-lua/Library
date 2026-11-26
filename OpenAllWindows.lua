@@ -46,30 +46,58 @@ end
 local Library = loadLibrary()
 if type(Library.Window) ~= "function" then error("SilentHub.Window() is missing.") end
 
--- Colon syntax is intentional: the current constructor accepts options as arg #2.
-local function createWindow(name, title, subtitle, size, minimum, maximum, key, logo)
-    return Library:Window({
-        Name = name,
-        Title = title,
-        Subtitle = subtitle,
-        Logo = logo,
-        Size = UDim2.fromOffset(size.X, size.Y),
-        MinSize = Vector2.new(minimum.X, minimum.Y),
-        MaxSize = Vector2.new(maximum.X, maximum.Y),
-        Keybind = key,
-        Loading = false,
-        ConfigurationSaving = { Enabled = false },
-    })
+-- All per-window presentation options are supplied at creation time.
+-- Set CUSTOM_LOGO to an asset ID to replace the default for these windows.
+-- Leave it nil to use the library's default logo.
+local CUSTOM_LOGO = nil -- Example: "rbxassetid://1234567890"
+
+local function createWindow(options)
+    options.Logo = options.Logo or CUSTOM_LOGO
+    options.Loading = false
+    options.ConfigurationSaving = { Enabled = false }
+    return Library:Window(options)
 end
 
-local main = createWindow("MainWindow", "SilentHub", "Multi-window UI shell",
-    Vector2.new(760, 560), Vector2.new(480, 360), Vector2.new(900, 700), Enum.KeyCode.RightControl)
-local loader = createWindow("LoaderWindow", "Loader", "Placeholder interface",
-    Vector2.new(340, 250), Vector2.new(280, 210), Vector2.new(560, 420), Enum.KeyCode.RightShift)
-local skins = createWindow("SkinsWindow", "Skins", "Placeholder interface",
-    Vector2.new(420, 320), Vector2.new(300, 230), Vector2.new(680, 500), Enum.KeyCode.LeftAlt)
-local accessories = createWindow("AccessoriesWindow", "Accessories", "Placeholder interface",
-    Vector2.new(420, 320), Vector2.new(300, 230), Vector2.new(680, 500), Enum.KeyCode.Home)
+local main = createWindow({
+    Name = "MainWindow",
+    Title = "SilentHub",
+    SubTitle = "Multi-window UI shell",
+    Logo = CUSTOM_LOGO,
+    Size = UDim2.fromOffset(760, 560),
+    MinSize = Vector2.new(480, 360),
+    MaxSize = Vector2.new(900, 700),
+    Keybind = Enum.KeyCode.RightControl,
+})
+local loader = createWindow({
+    Name = "LoaderWindow",
+    Title = "Loader",
+    SubTitle = "Placeholder interface",
+    Logo = CUSTOM_LOGO,
+    Size = UDim2.fromOffset(340, 250),
+    MinSize = Vector2.new(280, 210),
+    MaxSize = Vector2.new(560, 420),
+    Keybind = Enum.KeyCode.RightShift,
+})
+local skins = createWindow({
+    Name = "SkinsWindow",
+    Title = "Skins",
+    SubTitle = "Placeholder interface",
+    Logo = CUSTOM_LOGO,
+    Size = UDim2.fromOffset(420, 320),
+    MinSize = Vector2.new(300, 230),
+    MaxSize = Vector2.new(680, 500),
+    Keybind = Enum.KeyCode.LeftAlt,
+})
+local accessories = createWindow({
+    Name = "AccessoriesWindow",
+    Title = "Accessories",
+    SubTitle = "Placeholder interface",
+    Logo = CUSTOM_LOGO,
+    Size = UDim2.fromOffset(420, 320),
+    MinSize = Vector2.new(300, 230),
+    MaxSize = Vector2.new(680, 500),
+    Keybind = Enum.KeyCode.Home,
+})
 
 -- Main panel: status, dialogs and window management.
 local overview = main:Tab({ Name = "Overview", Icon = "house", Desc = "UI scaffold overview" })
