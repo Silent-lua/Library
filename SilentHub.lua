@@ -8,8 +8,8 @@
 --   tab:Section(), tab:Button(), tab:Toggle(), tab:Slider(), tab:Stepper()
 --   tab:Dropdown(), tab:Input(), tab:Keybind(), tab:ColorPicker()
 --   tab:Progress(), tab:Paragraph(), tab:Label(), tab:Divider()
---   window:SetLogo(image) or options.Logo = image; default: SilentHub logo asset.
---   Library.Assets.Logo can change the default for subsequently created windows.
+--   CreateWindow({ Title = "...", SubTitle = "...", Logo = "rbxassetid://..." })
+--   Logo is optional; the default SilentHub asset is used when omitted.
 --
 -- The implementation remains behaviour-compatible with the original SilentHub
 -- release; this repository applies formatting and API documentation only.
@@ -2318,7 +2318,7 @@ local g = {}
 g.__index = g
 function f.Window(ab, k)
 	local G, p, H, L, I, A = "SilentHub", "Frame", "CanvasGroup", "UIListLayout", "AbsoluteSize", "table"
-	k = l(k, { Name = "Title", LoadingSubtitle = "Subtitle", ToggleUIKeybind = "Keybind" })
+	k = l(k, { Name = "Title", SubTitle = "Subtitle", LoadingSubtitle = "Subtitle", ToggleUIKeybind = "Keybind" })
 	if type(k.Keybind) == "string" then
 		k.Keybind = Enum.KeyCode[k.Keybind]
 	end
@@ -2335,7 +2335,7 @@ function f.Window(ab, k)
 		_frameSteps = {},
 		_destroyed = false,
 	}, g)
-	j.Logo = k.Logo or k.Icon or t.Logo
+	j.Logo = k.Logo or t.Logo
 	local function B(a)
 		return function(...)
 			for b, a in ipairs(j._inputListeners[a]) do
@@ -2898,7 +2898,7 @@ function g:_showLoader(g)
 		ScaleType = Enum.ScaleType.Fit,
 		Parent = q,
 	})
-	u(r, g.Logo or g.Icon or self.Logo or t.Logo)
+	u(r, self.Logo or t.Logo)
 	self._loaderLogoImage = r
 	task.delay(0.15, function()
 		b(r, { Size = UDim2.fromScale(0.85, 0.85), Rotation = 0, ImageTransparency = 0 }, 0.6, Enum.EasingStyle.Back)
@@ -3075,7 +3075,7 @@ function g:_createOpenButton(j)
 		ZIndex = 31,
 		Parent = b,
 	})
-	u(l, j.Logo or j.Icon or self.Logo or t.Logo)
+	u(l, self.Logo or t.Logo)
 	self.OpenButtonImage = l
 	d({
 		Position = UDim2.fromOffset(28, 0),
@@ -4276,19 +4276,6 @@ end
 function g:SetKeybind(a)
 	self.Keybind = a
 	self._keyChipLabel.Text = P(a)
-end
-function g:SetLogo(a)
-	a = a or t.Logo
-	self.Logo = a
-	if self.LogoImage and self.LogoImage.Parent then
-		u(self.LogoImage, a)
-	end
-	if self.OpenButtonImage and self.OpenButtonImage.Parent then
-		u(self.OpenButtonImage, a)
-	end
-	if self._loaderLogoImage and self._loaderLogoImage.Parent then
-		u(self._loaderLogoImage, a)
-	end
 end
 function g:Notify(f)
 	local k = "Frame"
