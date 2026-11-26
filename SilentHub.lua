@@ -5,21 +5,24 @@
 -- Public entry points:
 --   SilentHub.CreateWindow(options) / SilentHub.Window(options)
 --   window:Tab(options), window:Toggle(), window:Notify(), window:Dialog()
---   window:SetBackgroundImage(image), SilentHub:SetTheme(palette)
---   Window options: Fullscreen, StartHidden, BackgroundImage, BackgroundImageTransparency
+--   SilentHub:CreateLauncher(options) for a central modular script hub
+--   SilentHub:SetTheme(name) and SilentHub:SetBackground(group, image, options)
+--   launcher:RegisterModule({ Id, Title, Create = function(launcher, module) ... end })
 --   tab:Section(), tab:Button(), tab:Toggle(), tab:Slider(), tab:Stepper()
 --   tab:Dropdown(), tab:Input(), tab:Keybind(), tab:ColorPicker()
 --   tab:Progress(), tab:Paragraph(), tab:Label(), tab:Divider()
---   CreateWindow({ Title = "...", SubTitle = "...", Logo = "rbxassetid://..." })
---   Logo is optional; the default SilentHub asset is used when omitted.
+--   CreateWindow({ Title = "...", SubTitle = "...", Logo = "", Background = "" })
+--   Empty/omitted Logo uses the default logo; empty/omitted Background uses the theme.
 --
--- Theme and background APIs are shared by all windows created from this library.
+-- Existing controls and configuration APIs are retained. New functionality is
+-- layered onto the existing window/tab architecture rather than replacing it.
 
 local T = game:GetService("TweenService")
 local q = game:GetService("UserInputService")
 local ad = game:GetService("GuiService")
 local U = game:GetService("RunService")
 local C = game:GetService("HttpService")
+local ContentProvider = game:GetService("ContentProvider")
 local D = game:GetService("Players")
 local E = D.LocalPlayer
 local CACHE = "SilentUI"
@@ -84,21 +87,93 @@ local function n(e, b, a, d, g)
 	end
 	return a
 end
-f.Theme = {
-	Background = Color3.fromRGB(20, 16, 20),
-	Surface = Color3.fromRGB(24, 19, 24),
-	Surface2 = Color3.fromRGB(28, 22, 28),
-	Surface3 = Color3.fromRGB(42, 36, 43),
-	Stroke = Color3.fromRGB(40, 32, 41),
-	StrokeHover = Color3.fromRGB(88, 70, 90),
-	Accent = Color3.fromRGB(235, 199, 246),
-	AccentDark = Color3.fromRGB(24, 18, 26),
-	Text = Color3.fromRGB(233, 229, 234),
-	Muted = Color3.fromRGB(125, 115, 126),
-	Warning = Color3.fromRGB(240, 176, 108),
-	Success = Color3.fromRGB(150, 220, 170),
-	Error = Color3.fromRGB(240, 120, 120),
+local function palette(values)
+	local result = {}
+	for name, rgb in pairs(values) do
+		result[name] = Color3.fromRGB(rgb[1], rgb[2], rgb[3])
+	end
+	return result
+end
+
+f.Themes = {
+	["Midnight Graphite"] = palette({
+		Background = { 20, 16, 20 }, Surface = { 24, 19, 24 }, Surface2 = { 28, 22, 28 },
+		Surface3 = { 42, 36, 43 }, Stroke = { 40, 32, 41 }, StrokeHover = { 88, 70, 90 },
+		Accent = { 235, 199, 246 }, AccentSecondary = { 159, 132, 185 }, AccentDark = { 24, 18, 26 },
+		Text = { 233, 229, 234 }, Muted = { 125, 115, 126 }, Warning = { 240, 176, 108 },
+		Success = { 150, 220, 170 }, Error = { 240, 120, 120 },
+	}),
+	["Obsidian Violet"] = palette({
+		Background = { 15, 12, 23 }, Surface = { 23, 18, 35 }, Surface2 = { 32, 25, 48 },
+		Surface3 = { 48, 37, 69 }, Stroke = { 56, 43, 78 }, StrokeHover = { 111, 83, 149 },
+		Accent = { 177, 126, 255 }, AccentSecondary = { 226, 157, 255 }, AccentDark = { 24, 15, 39 },
+		Text = { 243, 237, 255 }, Muted = { 158, 146, 179 }, Warning = { 255, 194, 112 },
+		Success = { 117, 218, 166 }, Error = { 255, 112, 139 },
+	}),
+	["Arctic Blue"] = palette({
+		Background = { 12, 20, 30 }, Surface = { 17, 29, 43 }, Surface2 = { 23, 39, 57 },
+		Surface3 = { 34, 55, 77 }, Stroke = { 39, 61, 82 }, StrokeHover = { 77, 133, 168 },
+		Accent = { 116, 205, 255 }, AccentSecondary = { 152, 239, 235 }, AccentDark = { 10, 27, 40 },
+		Text = { 231, 245, 255 }, Muted = { 139, 165, 184 }, Warning = { 255, 193, 112 },
+		Success = { 102, 222, 183 }, Error = { 255, 121, 131 },
+	}),
+	["Emerald Prestige"] = palette({
+		Background = { 12, 22, 20 }, Surface = { 17, 32, 28 }, Surface2 = { 23, 43, 37 },
+		Surface3 = { 34, 61, 51 }, Stroke = { 39, 65, 55 }, StrokeHover = { 72, 132, 104 },
+		Accent = { 104, 218, 164 }, AccentSecondary = { 194, 225, 139 }, AccentDark = { 9, 31, 23 },
+		Text = { 232, 247, 239 }, Muted = { 139, 170, 154 }, Warning = { 242, 192, 105 },
+		Success = { 104, 225, 159 }, Error = { 245, 115, 119 },
+	}),
+	["Crimson Noir"] = palette({
+		Background = { 24, 13, 17 }, Surface = { 34, 18, 23 }, Surface2 = { 47, 24, 31 },
+		Surface3 = { 67, 34, 43 }, Stroke = { 73, 38, 47 }, StrokeHover = { 145, 69, 83 },
+		Accent = { 245, 105, 126 }, AccentSecondary = { 255, 166, 116 }, AccentDark = { 43, 12, 21 },
+		Text = { 252, 237, 240 }, Muted = { 175, 139, 147 }, Warning = { 255, 185, 105 },
+		Success = { 123, 213, 155 }, Error = { 255, 105, 120 },
+	}),
+	["Oceanic"] = palette({
+		Background = { 10, 23, 29 }, Surface = { 14, 34, 42 }, Surface2 = { 19, 46, 56 },
+		Surface3 = { 29, 65, 76 }, Stroke = { 35, 70, 80 }, StrokeHover = { 63, 135, 148 },
+		Accent = { 69, 203, 207 }, AccentSecondary = { 87, 157, 237 }, AccentDark = { 7, 37, 43 },
+		Text = { 226, 246, 247 }, Muted = { 132, 168, 173 }, Warning = { 242, 190, 111 },
+		Success = { 101, 218, 178 }, Error = { 249, 117, 123 },
+	}),
+	["Titanium Silver"] = palette({
+		Background = { 20, 23, 27 }, Surface = { 29, 33, 38 }, Surface2 = { 39, 44, 51 },
+		Surface3 = { 56, 62, 70 }, Stroke = { 63, 69, 77 }, StrokeHover = { 112, 123, 135 },
+		Accent = { 190, 207, 222 }, AccentSecondary = { 125, 171, 203 }, AccentDark = { 27, 34, 41 },
+		Text = { 239, 243, 247 }, Muted = { 151, 162, 173 }, Warning = { 243, 189, 112 },
+		Success = { 132, 211, 172 }, Error = { 241, 118, 126 },
+	}),
+	["Amethyst"] = palette({
+		Background = { 21, 13, 29 }, Surface = { 31, 19, 43 }, Surface2 = { 42, 27, 59 },
+		Surface3 = { 61, 39, 82 }, Stroke = { 67, 43, 87 }, StrokeHover = { 127, 83, 158 },
+		Accent = { 199, 144, 255 }, AccentSecondary = { 244, 160, 222 }, AccentDark = { 36, 17, 50 },
+		Text = { 246, 237, 255 }, Muted = { 167, 145, 185 }, Warning = { 255, 195, 115 },
+		Success = { 128, 220, 174 }, Error = { 255, 118, 145 },
+	}),
+	["Champagne Gold"] = palette({
+		Background = { 25, 21, 16 }, Surface = { 36, 30, 22 }, Surface2 = { 48, 40, 29 },
+		Surface3 = { 68, 56, 39 }, Stroke = { 77, 64, 46 }, StrokeHover = { 148, 120, 76 },
+		Accent = { 226, 190, 119 }, AccentSecondary = { 238, 219, 174 }, AccentDark = { 43, 32, 15 },
+		Text = { 249, 243, 230 }, Muted = { 178, 162, 135 }, Warning = { 250, 188, 104 },
+		Success = { 151, 210, 158 }, Error = { 242, 119, 111 },
+	}),
+	["Carbon Minimal"] = palette({
+		Background = { 12, 13, 15 }, Surface = { 20, 21, 23 }, Surface2 = { 29, 30, 33 },
+		Surface3 = { 43, 45, 48 }, Stroke = { 49, 51, 55 }, StrokeHover = { 102, 106, 113 },
+		Accent = { 220, 224, 230 }, AccentSecondary = { 142, 177, 208 }, AccentDark = { 18, 19, 22 },
+		Text = { 242, 244, 247 }, Muted = { 143, 148, 155 }, Warning = { 238, 190, 112 },
+		Success = { 128, 211, 166 }, Error = { 243, 116, 124 },
+	}),
 }
+f.ThemeName = "Midnight Graphite"
+f.Theme = table.clone(f.Themes[f.ThemeName])
+f.Backgrounds = {
+	Primary = { Value = nil, Image = nil, ScaleType = "Crop", ImageTransparency = 0, OverlayTransparency = 0.32 },
+	Secondary = { Value = nil, Image = nil, ScaleType = "Crop", ImageTransparency = 0, OverlayTransparency = 0.32 },
+}
+f.Modules = {}
 f.Assets =
 	{ Shadow = "rbxassetid://6014261993", Glow = "rbxassetid://8992230677", Logo = "rbxassetid://98486608340824" }
 local A
@@ -230,123 +305,6 @@ f.Fonts = {
 	Bold = Font.new(J, Enum.FontWeight.SemiBold),
 }
 local a = f.Theme
-local an
-local backgroundImageCache = {}
-
--- Apply one shared palette to every existing and future window.
-function f:SetTheme(palette)
-	if type(palette) ~= "table" then
-		return false, "Theme must be a table."
-	end
-	local previous = {}
-	for key, value in pairs(a) do
-		previous[key] = value
-	end
-	for key, value in pairs(palette) do
-		if previous[key] ~= nil and typeof(value) == "Color3" then
-			a[key] = value
-		end
-	end
-	if an then
-		an.Success, an.Warning, an.Error = a.Success, a.Warning, a.Error
-	end
-	local colorProperties = { "BackgroundColor3", "TextColor3", "ImageColor3", "ScrollBarImageColor3", "BorderColor3", "Color" }
-	for _, window in ipairs(f.Windows) do
-		if window.Gui and window.Gui.Parent then
-			for _, object in ipairs(window.Gui:GetDescendants()) do
-				for _, propertyName in ipairs(colorProperties) do
-					local ok, current = pcall(function()
-						return object[propertyName]
-					end)
-					if ok and typeof(current) == "Color3" then
-						for key, oldColor in pairs(previous) do
-							if current == oldColor and a[key] ~= oldColor then
-								pcall(function()
-									object[propertyName] = a[key]
-								end)
-								break
-							end
-						end
-					elseif ok and typeof(current) == "ColorSequence" and propertyName == "Color" then
-						local updated, changed = {}, false
-						for _, point in ipairs(current.Keypoints) do
-							local color = point.Value
-							for key, oldColor in pairs(previous) do
-								if color == oldColor and a[key] ~= oldColor then
-									color = a[key]
-									changed = true
-									break
-								end
-							end
-							table.insert(updated, ColorSequenceKeypoint.new(point.Time, color))
-						end
-						if changed then
-							pcall(function()
-								object[propertyName] = ColorSequence.new(updated)
-							end)
-						end
-					end
-				end
-			end
-		end
-	end
-	return true
-end
-
-local function resolveBackgroundImage(value)
-	if value == nil or tostring(value):match("^%s*$") then
-		return nil
-	end
-	local image = tostring(value):gsub("^%s+", ""):gsub("%s+$", "")
-	if image:match("^%d+$") then
-		return "rbxassetid://" .. image
-	end
-	if image:match("^rbxassetid://") or image:match("^rbxasset://") then
-		return image
-	end
-	if not image:match("^https?://") then
-		return nil, "Use an asset ID, rbxassetid:// URI, or direct HTTPS image URL."
-	end
-	if backgroundImageCache[image] then
-		return backgroundImageCache[image]
-	end
-	local assetFunction = type(getcustomasset) == "function" and getcustomasset or getsynasset
-	if type(writefile) ~= "function" or type(assetFunction) ~= "function" then
-		return nil, "URL backgrounds need executor support for writefile and getcustomasset/getsynasset."
-	end
-	local extension = (image:match("%.([%w]+)[%?#]") or image:match("%.([%w]+)$") or "png"):lower()
-	if extension == "jpeg" then
-		extension = "jpg"
-	end
-	if extension ~= "png" and extension ~= "jpg" and extension ~= "webp" then
-		extension = "png"
-	end
-	if type(makefolder) == "function" then
-		pcall(function()
-			if type(isfolder) ~= "function" or not isfolder(CACHE) then
-				makefolder(CACHE)
-			end
-		end)
-	end
-	local path = CACHE .. "/background-image-" .. C:GenerateGUID(false) .. "." .. extension
-	local downloadOk, bytes = pcall(function()
-		return game:HttpGet(image)
-	end)
-	if not downloadOk or type(bytes) ~= "string" or #bytes == 0 then
-		return nil, "Could not download the image URL: " .. tostring(bytes)
-	end
-	local writeOk, writeError = pcall(writefile, path, bytes)
-	if not writeOk then
-		return nil, "Could not cache the image: " .. tostring(writeError)
-	end
-	local assetOk, asset = pcall(assetFunction, path)
-	if not assetOk or type(asset) ~= "string" then
-		return nil, "Could not convert the downloaded image into a local asset: " .. tostring(asset)
-	end
-	backgroundImageCache[image] = asset
-	return asset
-end
-
 local t = f.Assets
 local i = f.Fonts
 local m = q.TouchEnabled and not q.KeyboardEnabled
@@ -443,7 +401,7 @@ local function x(d, e, f, g, h)
 	})
 	c(
 		"UIGradient",
-		{ Color = ColorSequence.new(Color3.fromRGB(255, 255, 255), a.Accent), Rotation = h or 90, Parent = b }
+		{ Color = ColorSequence.new(a.AccentSecondary, a.Accent), Rotation = h or 90, Parent = b }
 	)
 	return b
 end
@@ -466,6 +424,162 @@ local function u(a, c)
 	a.Image = b
 	a.ImageRectOffset = d or Vector2.zero
 	a.ImageRectSize = e or Vector2.zero
+end
+local function optionalImageValue(value)
+	if type(value) == "number" then
+		value = tostring(value)
+	end
+	if type(value) ~= "string" then
+		return nil
+	end
+	value = value:gsub("^%s+", ""):gsub("%s+$", "")
+	if value == "" then
+		return nil
+	end
+	if value:match("^%d+$") then
+		return "rbxassetid://" .. value
+	end
+	return value
+end
+
+local function backgroundAsset(value)
+	if type(value) == "number" then
+		value = tostring(value)
+	end
+	if type(value) ~= "string" then
+		return nil, "background must be an asset ID or an HTTPS image URL"
+	end
+	value = value:gsub("^%s+", ""):gsub("%s+$", "")
+	if value == "" then
+		return nil
+	end
+	if value:match("^%d+$") then
+		return "rbxassetid://" .. value
+	end
+	if value:match("^rbxassetid://%d+$") or value:match("^rbxasset://") then
+		return value
+	end
+	if not value:match("^https://") and not value:match("^http://") then
+		return nil, "unsupported image identifier; use an asset ID or direct HTTP(S) image URL"
+	end
+
+	local path = value:match("^https?://[^/]+([^?#]*)") or ""
+	local extension = (path:match("%.([%w]+)$") or ""):lower()
+	local responseBody, contentType
+	local requestFunction
+	if type(request) == "function" then
+		requestFunction = request
+	elseif type(http_request) == "function" then
+		requestFunction = http_request
+	elseif type(syn) == "table" and type(syn.request) == "function" then
+		requestFunction = syn.request
+	elseif type(http) == "table" and type(http.request) == "function" then
+		requestFunction = http.request
+	end
+	if type(requestFunction) == "function" then
+		local ok, response = pcall(requestFunction, { Url = value, Method = "GET" })
+		if ok and type(response) == "table" then
+			responseBody = response.Body or response.body
+			local headers = response.Headers or response.headers
+			if type(headers) == "table" then
+				for key, item in pairs(headers) do
+					if tostring(key):lower() == "content-type" then
+						contentType = tostring(item):lower()
+						break
+					end
+				end
+			end
+		end
+	end
+	if type(responseBody) ~= "string" then
+		local ok, body = pcall(function()
+			return game:HttpGet(value)
+		end)
+		if not ok then
+			return nil, "the executor could not download the image: " .. tostring(body)
+		end
+		responseBody = body
+	end
+	if type(responseBody) ~= "string" or #responseBody == 0 then
+		return nil, "the image URL returned an empty response"
+	end
+	if #responseBody > 12 * 1024 * 1024 then
+		return nil, "image exceeds the 12 MB cache limit"
+	end
+	if contentType and contentType:find("image/png", 1, true) then
+		extension = "png"
+	elseif contentType and (contentType:find("image/jpeg", 1, true) or contentType:find("image/jpg", 1, true)) then
+		extension = "jpg"
+	end
+	if extension == "jpeg" then
+		extension = "jpg"
+	end
+	if extension ~= "png" and extension ~= "jpg" then
+		return nil, "URL must return a PNG/JPG image (or expose a .png/.jpg file extension)"
+	end
+	local assetGetter = getcustomasset or getsynasset
+	if type(writefile) ~= "function" or type(assetGetter) ~= "function" then
+		return nil, "URL backgrounds require executor writefile and getcustomasset/getsynasset; Roblox asset IDs do not"
+	end
+	local folder = CACHE .. "/Backgrounds"
+	pcall(function()
+		if type(isfolder) == "function" and type(makefolder) == "function" and not isfolder(CACHE) then
+			makefolder(CACHE)
+		end
+		if type(isfolder) == "function" and type(makefolder) == "function" and not isfolder(folder) then
+			makefolder(folder)
+		end
+	end)
+	local guid = C:GenerateGUID(false):gsub("-", "")
+	local filePath = folder .. "/background-" .. guid .. "." .. extension
+	local wrote, writeResult = pcall(writefile, filePath, responseBody)
+	if not wrote or writeResult == false then
+		return nil, "could not cache background image: " .. tostring(writeResult)
+	end
+	local gotAsset, asset = pcall(assetGetter, filePath)
+	if not gotAsset or type(asset) ~= "string" then
+		return nil, "executor could not convert the cached image into a Roblox content ID"
+	end
+	return asset
+end
+
+local function applyBackgroundLayer(imageLayer, overlay, configuration)
+	if not imageLayer or not overlay then
+		return
+	end
+	local image = configuration and configuration.Image
+	if type(image) == "string" and image ~= "" then
+		local ok = pcall(function()
+			imageLayer.Image = image
+			imageLayer.ScaleType = configuration.ScaleType == "Fit" and Enum.ScaleType.Fit or Enum.ScaleType.Crop
+			imageLayer.ImageTransparency = math.clamp(tonumber(configuration.ImageTransparency) or 0, 0, 1)
+			imageLayer.Visible = true
+			overlay.BackgroundColor3 = a.Background
+			overlay.BackgroundTransparency = math.clamp(tonumber(configuration.OverlayTransparency) or 0.32, 0, 1)
+			overlay.Visible = true
+		end)
+		if ok then
+			local expectedImage = image
+			task.spawn(function()
+				local fetchStatus
+				local preloadOk = pcall(function()
+					ContentProvider:PreloadAsync({ imageLayer }, function(_, status)
+						fetchStatus = status
+					end)
+				end)
+				if imageLayer.Parent and imageLayer.Image == expectedImage and (not preloadOk or fetchStatus ~= Enum.AssetFetchStatus.Success) then
+					imageLayer.Image = ""
+					imageLayer.Visible = false
+					overlay.Visible = false
+					warn("[SilentHub] background image failed to load; using theme fallback")
+				end
+			end)
+			return
+		end
+	end
+	imageLayer.Image = ""
+	imageLayer.Visible = false
+	overlay.Visible = false
 end
 local function ag()
 	local b
@@ -2431,31 +2545,232 @@ local function am(a)
 		a(c or "Unavailable")
 	end)
 end
-an = { Success = a.Success, Warning = a.Warning, Error = a.Error }
+local an = { Success = a.Success, Warning = a.Warning, Error = a.Error }
 local g = {}
 g.__index = g
+local themeRoles = {
+	"Background", "Surface", "Surface2", "Surface3", "Stroke", "StrokeHover", "Accent",
+	"AccentSecondary", "AccentDark", "Text", "Muted", "Warning", "Success", "Error",
+}
+
+local function remapThemeColors(gui, oldTheme, newTheme)
+	local function mapped(color)
+		for _, role in ipairs(themeRoles) do
+			if oldTheme[role] and color == oldTheme[role] then
+				return newTheme[role]
+			end
+		end
+		return nil
+	end
+	local function remapSequence(sequence)
+		local keypoints = sequence.Keypoints
+		local changed = false
+		local updated = table.create(#keypoints)
+		for index, keypoint in ipairs(keypoints) do
+			local replacement = mapped(keypoint.Value)
+			if replacement then
+				changed = true
+				updated[index] = ColorSequenceKeypoint.new(keypoint.Time, replacement)
+			else
+				updated[index] = keypoint
+			end
+		end
+		return changed and ColorSequence.new(updated) or sequence
+	end
+	for _, instance in ipairs(gui:GetDescendants()) do
+		if instance:IsA("GuiObject") then
+			for _, property in ipairs({ "BackgroundColor3", "TextColor3", "ImageColor3", "ScrollBarImageColor3", "PlaceholderColor3" }) do
+				local ok, current = pcall(function()
+					return instance[property]
+				end)
+				if ok then
+					local replacement = mapped(current)
+					if replacement then
+						pcall(function()
+							instance[property] = replacement
+						end)
+					end
+				end
+			end
+		elseif instance:IsA("UIStroke") then
+			local replacement = mapped(instance.Color)
+			if replacement then
+				instance.Color = replacement
+			end
+		elseif instance:IsA("UIGradient") then
+			instance.Color = remapSequence(instance.Color)
+		end
+	end
+end
+
+function f:SetTheme(themeName)
+	local selected = type(themeName) == "string" and f.Themes[themeName] or nil
+	if not selected then
+		return false, "unknown theme"
+	end
+	local previous = table.clone(f.Theme)
+	local nextTheme = table.clone(selected)
+	for key, value in pairs(nextTheme) do
+		f.Theme[key] = value
+	end
+	an.Success = nextTheme.Success
+	an.Warning = nextTheme.Warning
+	an.Error = nextTheme.Error
+	for _, window in ipairs(f.Windows) do
+		if window.Gui and window.Gui.Parent then
+			remapThemeColors(window.Gui, previous, nextTheme)
+			if window.BackgroundOverlay then
+				window.BackgroundOverlay.BackgroundColor3 = nextTheme.Background
+			end
+			if window.LoaderBackgroundOverlay then
+				window.LoaderBackgroundOverlay.BackgroundColor3 = nextTheme.Background
+			end
+		end
+	end
+	f.ThemeName = themeName
+	return true
+end
+
+function f:SetBackground(group, value, options)
+	group = group == "Secondary" and "Secondary" or group == "Primary" and "Primary" or nil
+	if not group then
+		return false, "group must be Primary or Secondary"
+	end
+	local config = f.Backgrounds[group]
+	options = type(options) == "table" and options or {}
+	value = optionalImageValue(value)
+	config.Value = value
+	config.ScaleType = options.ScaleType == "Fit" and "Fit" or "Crop"
+	config.ImageTransparency = math.clamp(tonumber(options.ImageTransparency) or 0, 0, 1)
+	config.OverlayTransparency = math.clamp(tonumber(options.OverlayTransparency) or 0.32, 0, 1)
+	if value == nil then
+		config.Image = nil
+		for _, window in ipairs(f.Windows) do
+			if window.BackgroundGroup == group and not window._backgroundOverride then
+				window:_applyBackground(config)
+			end
+		end
+		return true, "cleared"
+	end
+
+	local isRemote = type(value) == "string" and (value:match("^https://") or value:match("^http://"))
+	if isRemote then
+		config.Image = nil
+		for _, window in ipairs(f.Windows) do
+			if window.BackgroundGroup == group and not window._backgroundOverride then
+				window:_applyBackground(config)
+			end
+		end
+		task.spawn(function()
+			local resolved, err = backgroundAsset(value)
+			if config.Value ~= value then
+				return
+			end
+			if not resolved then
+				warn("[SilentHub] " .. tostring(err))
+				return
+			end
+			config.Image = resolved
+			for _, window in ipairs(f.Windows) do
+				if window.BackgroundGroup == group and not window._backgroundOverride then
+					window:_applyBackground(config)
+				end
+			end
+		end)
+		return true, "downloading"
+	end
+
+	local image, resolveError = backgroundAsset(value)
+	if not image then
+		return false, resolveError or "invalid background"
+	end
+	config.Image = image
+	for _, window in ipairs(f.Windows) do
+		if window.BackgroundGroup == group and not window._backgroundOverride then
+			window:_applyBackground(config)
+		end
+	end
+	return true, "applied"
+end
+
+function g:SetBackgroundGroup(group)
+	self.BackgroundGroup = group == "Secondary" and "Secondary" or "Primary"
+	self._backgroundOverride = nil
+	self:_applyBackground(f.Backgrounds[self.BackgroundGroup])
+	return self.BackgroundGroup
+end
+
+function g:SetBackground(value, options)
+	local normalized = optionalImageValue(value)
+	if not normalized then
+		self._backgroundOverride = nil
+		self:_applyBackground(f.Backgrounds[self.BackgroundGroup])
+		return true, "default"
+	end
+
+	options = type(options) == "table" and options or {}
+	local configuration = {
+		Image = nil,
+		ScaleType = options.ScaleType == "Fit" and "Fit" or "Crop",
+		ImageTransparency = math.clamp(tonumber(options.ImageTransparency) or 0, 0, 1),
+		OverlayTransparency = math.clamp(tonumber(options.OverlayTransparency) or 0.32, 0, 1),
+	}
+	self._backgroundOverride = configuration
+	self:_applyBackground(configuration)
+
+	local function resolve()
+		local image, err = backgroundAsset(normalized)
+		if self._destroyed or self._backgroundOverride ~= configuration then
+			return
+		end
+		if not image then
+			warn("[SilentHub] " .. tostring(err or "invalid background"))
+			self._backgroundOverride = nil
+			self:_applyBackground(f.Backgrounds[self.BackgroundGroup])
+			return
+		end
+		configuration.Image = image
+		self:_applyBackground(configuration)
+	end
+
+	if normalized:match("^https?://") then
+		task.spawn(resolve)
+		return true, "downloading"
+	end
+	resolve()
+	return true, configuration.Image and "applied" or "default"
+end
+
+function g:_applyBackground(configuration)
+	configuration = configuration or self._backgroundOverride or f.Backgrounds[self.BackgroundGroup]
+	applyBackgroundLayer(self.BackgroundLayer, self.BackgroundOverlay, configuration)
+	applyBackgroundLayer(self.LoaderBackgroundLayer, self.LoaderBackgroundOverlay, configuration)
+end
+
 function f.Window(ab, k)
 	local G, p, H, L, I, A = "SilentHub", "Frame", "CanvasGroup", "UIListLayout", "AbsoluteSize", "table"
-	k = l(k, { Name = "Title", SubTitle = "Subtitle", LoadingSubtitle = "Subtitle", ToggleUIKeybind = "Keybind" })
+	k = l(k, { Name = "Title", SubTitle = "Subtitle", LoadingSubtitle = "Subtitle", ToggleUIKeybind = "Keybind", Background = "Fondo" })
 	if type(k.Keybind) == "string" then
 		k.Keybind = Enum.KeyCode[k.Keybind]
 	end
-	local V = k.Fullscreen and UDim2.new(1, -24, 1, -24) or k.Size or UDim2.fromOffset(720, 540)
+	local V = k.Size or UDim2.fromOffset(700, 500)
 	local N = k.Keybind or Enum.KeyCode.RightControl
 	local j = setmetatable({
 		Tabs = {},
 		CurrentTab = nil,
-		Open = k.StartHidden ~= true,
-		Fullscreen = k.Fullscreen == true,
-		_startHidden = k.StartHidden == true,
+		Open = true,
 		Keybind = N,
+		Responsive = k.Responsive ~= false,
+		_silentHubWindow = true,
+		_baseSize = V,
+		BackgroundGroup = k.BackgroundGroup == "Secondary" and "Secondary" or "Primary",
 		_connections = {},
 		_controls = {},
 		_inputListeners = { Began = {}, Changed = {}, Ended = {}, Render = {} },
 		_frameSteps = {},
 		_destroyed = false,
 	}, g)
-	j.Logo = k.Logo or t.Logo
+	j.Logo = optionalImageValue(k.Logo) or t.Logo
 	local function B(a)
 		return function(...)
 			for b, a in ipairs(j._inputListeners[a]) do
@@ -2515,27 +2830,30 @@ function f.Window(ab, k)
 		Parent = z,
 	})
 	j.Body = n
-	j.BackgroundImageLabel = nil
-	j._backgroundImageTransparency = math.clamp(tonumber(k.BackgroundImageTransparency) or 0.24, 0, 1)
-	local initialBackground = k.BackgroundImage or k.Background
-	if initialBackground ~= nil then
-		local imageContent, imageError = resolveBackgroundImage(initialBackground)
-		if imageContent then
-			j.BackgroundImageLabel = c("ImageLabel", {
-				Name = "SharedBackgroundImage",
-				Size = UDim2.fromScale(1, 1),
-				BackgroundTransparency = 1,
-				Image = imageContent,
-				ImageTransparency = j._backgroundImageTransparency,
-				ScaleType = Enum.ScaleType.Crop,
-				ZIndex = 0,
-				Parent = n,
-			})
-			e(j.BackgroundImageLabel, UDim.new(0, 10))
-		elseif imageError then
-			warn("[SilentHub] background image unavailable: " .. tostring(imageError))
-		end
-	end
+	j.BackgroundLayer = c("ImageLabel", {
+		Name = "BackgroundImage",
+		Position = UDim2.fromScale(0, 0),
+		Size = UDim2.fromScale(1, 1),
+		BackgroundTransparency = 1,
+		ImageTransparency = 1,
+		ScaleType = Enum.ScaleType.Crop,
+		ZIndex = 0,
+		Visible = false,
+		Parent = n,
+	})
+	e(j.BackgroundLayer, UDim.new(0, 10))
+	j.BackgroundOverlay = c("Frame", {
+		Name = "BackgroundOverlay",
+		Position = UDim2.fromScale(0, 0),
+		Size = UDim2.fromScale(1, 1),
+		BackgroundColor3 = a.Background,
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		ZIndex = 0,
+		Visible = false,
+		Parent = n,
+	})
+	e(j.BackgroundOverlay, UDim.new(0, 10))
 	e(n, UDim.new(0, 10))
 	j.BodyStroke = h(n, a.Stroke)
 	M(n)
@@ -2543,14 +2861,18 @@ function f.Window(ab, k)
 	x(n, UDim2.fromOffset(130, 60), UDim2.new(0, -10, 1, -10), 0.75, 90)
 	x(n, UDim2.fromOffset(520, 240), UDim2.new(1, -14, 0, 10), 0.92, 90)
 	local C = c(p, { Name = "Sidebar", Size = UDim2.new(0, 170, 1, 0), BackgroundTransparency = 1, Parent = n })
-	c(p, {
+	j.Sidebar = C
+	local separator = c(p, {
+		Name = "SidebarSeparator",
 		Position = UDim2.new(0, 170, 0, 28),
 		Size = UDim2.new(0, 1, 1, -56),
 		BackgroundColor3 = a.Stroke,
 		BorderSizePixel = 0,
 		Parent = n,
 	})
+	j.SidebarSeparator = separator
 	local J = c(p, { Name = "Header", Size = UDim2.new(1, 0, 0, 72), BackgroundTransparency = 1, Parent = C })
+	j.Header = J
 	local X = c("ImageLabel", {
 		Position = UDim2.fromOffset(22, 27),
 		Size = UDim2.fromOffset(30, 28),
@@ -2562,14 +2884,14 @@ function f.Window(ab, k)
 	})
 	u(X, j.Logo)
 	j.LogoImage = X
-	d({
+	j.HeaderTitleLabel = d({
 		Position = UDim2.fromOffset(60, 25),
 		Size = UDim2.new(1, -70, 0, 20),
 		Text = k.Title or "SilentHub",
 		TextSize = 20,
 		Parent = J,
 	})
-	d({
+	j.HeaderSubtitleLabel = d({
 		Position = UDim2.fromOffset(60, 45),
 		Size = UDim2.new(1, -70, 0, 14),
 		Text = k.Subtitle or "",
@@ -2591,7 +2913,7 @@ function f.Window(ab, k)
 	})
 	j.TabList = v
 	o(v, 16, 16, 4, 4)
-	c(L, { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 4), Parent = v })
+	j.TabLayout = c(L, { SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 4), Parent = v })
 	local D = c(p, {
 		AnchorPoint = Vector2.new(0, 0.5),
 		Position = UDim2.fromOffset(6, 0),
@@ -2621,6 +2943,7 @@ function f.Window(ab, k)
 		p,
 		{ Position = UDim2.new(0, 22, 1, -36), Size = UDim2.new(1, -44, 0, 22), BackgroundTransparency = 1, Parent = C }
 	)
+	j.SidebarFooter = S
 	local y = c(p, {
 		Size = UDim2.fromOffset(0, 22),
 		AutomaticSize = Enum.AutomaticSize.X,
@@ -2663,53 +2986,6 @@ function f.Window(ab, k)
 		Parent = n,
 	})
 	j.Content = E
-	local function updateResponsiveLayout()
-		local viewportWidth = 0
-		if s then
-			local ok, viewport = pcall(function()
-				return s.AbsoluteSize
-			end)
-			if ok and viewport then
-				viewportWidth = viewport.X
-			end
-		end
-		if viewportWidth <= 0 then
-			return
-		end
-
-		local compact = viewportWidth < 560
-		local sidebarWidth = compact and math.clamp(math.floor(viewportWidth * 0.29), 96, 132) or 170
-		local function setProperty(object, property, value)
-			if object then
-				pcall(function()
-					object[property] = value
-				end)
-			end
-		end
-
-		-- Every reference is guarded: a missing optional visual must not abort
-		-- window creation or prevent the remaining layout from being applied.
-		setProperty(C, "Size", UDim2.new(0, sidebarWidth, 1, 0))
-		setProperty(sidebarDivider, "Position", UDim2.new(0, sidebarWidth, 0, 28))
-		setProperty(J, "Size", UDim2.new(1, 0, 0, compact and 52 or 72))
-		setProperty(X, "Position", UDim2.fromOffset(compact and 12 or 22, compact and 12 or 27))
-		setProperty(X, "Size", UDim2.fromOffset(compact and 24 or 30, compact and 24 or 28))
-		setProperty(titleLabel, "Visible", not compact)
-		setProperty(subtitleLabel, "Visible", not compact)
-		setProperty(v, "Position", UDim2.fromOffset(0, compact and 60 or 80))
-		setProperty(v, "Size", UDim2.new(1, 0, 1, compact and -98 or -116))
-		setProperty(tabsPadding, "PaddingLeft", UDim.new(0, compact and 8 or 16))
-		setProperty(tabsPadding, "PaddingRight", UDim.new(0, compact and 8 or 16))
-		setProperty(S, "Position", UDim2.new(0, compact and 8 or 22, 1, compact and -30 or -36))
-		setProperty(S, "Size", UDim2.new(1, compact and -16 or -44, 0, 22))
-		setProperty(Z, "Visible", not compact)
-		setProperty(E, "Position", UDim2.fromOffset(sidebarWidth + 1, 0))
-		setProperty(E, "Size", UDim2.new(1, -sidebarWidth - 1, 1, 0))
-	end
-	updateResponsiveLayout()
-	if s then
-		table.insert(j._connections, s:GetPropertyChangedSignal(I):Connect(updateResponsiveLayout))
-	end
 	j._outLayer = c(H, {
 		Name = "TransitionOut",
 		Size = UDim2.fromScale(1, 1),
@@ -2751,6 +3027,7 @@ function f.Window(ab, k)
 	w.MouseButton1Click:Connect(function()
 		j:Toggle(false)
 	end)
+	j.CloseButton = w
 	local K = c(p, {
 		Name = "Notifications",
 		AnchorPoint = Vector2.new(1, 1),
@@ -2786,14 +3063,10 @@ function f.Window(ab, k)
 			j._controlsDirty = true
 		end)
 	)
-	if not j.Fullscreen and k.Draggable ~= false then
-		j:_enableDrag()
-	end
+	j:_enableDrag()
 	j.MaxSize = k.MaxSize
 	j.KeepOnScreen = k.KeepOnScreen ~= false
-	if not j.Fullscreen and k.Resizable ~= false then
-		j:_enableResize(k.MinSize or Vector2.new(480, 360))
-	end
+	j:_enableResize(k.MinSize or Vector2.new(480, 360))
 	local F = k.ConfigurationSaving
 	if type(F) == A and F.Enabled ~= false then
 		j.ConfigFolder = CACHE
@@ -2845,6 +3118,11 @@ function f.Window(ab, k)
 	end
 	j._introDone = false
 	table.insert(f.Windows, j)
+	if k.Background ~= nil then
+		j:SetBackground(k.Background, k.BackgroundOptions)
+	else
+		j:_applyBackground(f.Backgrounds[j.BackgroundGroup])
+	end
 	if k.Home then
 		j:_buildHome(type(k.Home) == A and k.Home or {})
 	end
@@ -2944,7 +3222,7 @@ function g:_enableDrag()
 				return
 			end
 			local b = r()
-			if not Q(b, self.Body) or self:_overControl(b) then
+			if not Q(b, self.Header) or self:_overControl(b) then
 				return
 			end
 			a = true
@@ -3037,14 +3315,6 @@ function g:_playIntro(c)
 		ab(b._button, 0.1 + a * 0.05, true)
 	end
 	self.Indicator.Visible = false
-	if self._startHidden then
-		self.Open = false
-		self.Root.Visible = false
-		self.Body.GroupTransparency = 1
-		self.BodyStroke.Transparency = 1
-		self.Shadow.ImageTransparency = 1
-		self.Scale.Scale = self._fitScale or 1
-	end
 	task.delay(0.15 + #self.Tabs * 0.05, function()
 		if self.CurrentTab then
 			self:_placeIndicator(self.CurrentTab)
@@ -3062,9 +3332,31 @@ function g:_showLoader(g)
 		BackgroundColor3 = a.Background,
 		BorderSizePixel = 0,
 		GroupTransparency = 1,
+		ClipsDescendants = true,
 		ZIndex = 10,
 		Parent = w,
 	})
+	self.LoaderBackgroundLayer = c("ImageLabel", {
+		Name = "LoaderBackgroundImage",
+		Size = UDim2.fromScale(1, 1),
+		BackgroundTransparency = 1,
+		ImageTransparency = 1,
+		ScaleType = Enum.ScaleType.Crop,
+		ZIndex = 0,
+		Visible = false,
+		Parent = f,
+	})
+	self.LoaderBackgroundOverlay = c("Frame", {
+		Name = "LoaderBackgroundOverlay",
+		Size = UDim2.fromScale(1, 1),
+		BackgroundColor3 = a.Background,
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		ZIndex = 0,
+		Visible = false,
+		Parent = f,
+	})
+	self:_applyBackground()
 	local y = e(f, UDim.new(0, 12))
 	local z = h(f, a.Stroke, 1)
 	M(f)
@@ -3203,26 +3495,110 @@ function g:_showLoader(g)
 		end)
 	end)
 end
+function g:_applyResponsiveLayout(portrait)
+	if not self.Responsive then
+		return
+	end
+	self._responsivePortrait = portrait == true
+	local sidebarWidth = self._responsiveCompact and 146 or 170
+	local sidebarHeight = self._responsivePortrait and 106 or nil
+	self.Sidebar.Size = self._responsivePortrait and UDim2.new(1, 0, 0, sidebarHeight) or UDim2.new(0, sidebarWidth, 1, 0)
+	self.Header.Size = UDim2.new(1, 0, 0, self._responsivePortrait and 56 or 72)
+	self.LogoImage.Position = UDim2.fromOffset(self._responsivePortrait and 16 or 22, self._responsivePortrait and 14 or 27)
+	self.LogoImage.Size = UDim2.fromOffset(30, 28)
+	self.HeaderTitleLabel.Position = UDim2.fromOffset(self._responsivePortrait and 54 or 60, self._responsivePortrait and 10 or 25)
+	self.HeaderTitleLabel.Size = UDim2.new(1, -72, 0, 20)
+	self.HeaderSubtitleLabel.Position = UDim2.fromOffset(self._responsivePortrait and 54 or 60, self._responsivePortrait and 31 or 45)
+	self.HeaderSubtitleLabel.Size = UDim2.new(1, -72, 0, 14)
+
+	if self._responsivePortrait then
+		self.TabList.Position = UDim2.fromOffset(0, 56)
+		self.TabList.Size = UDim2.new(1, 0, 0, 48)
+		self.TabList.ScrollingDirection = Enum.ScrollingDirection.X
+		self.TabList.AutomaticCanvasSize = Enum.AutomaticSize.X
+		self.TabLayout.FillDirection = Enum.FillDirection.Horizontal
+		self.TabLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+		self.TabLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+		self.TabLayout.Padding = UDim.new(0, 6)
+		local padding = self.TabList:FindFirstChildOfClass("UIPadding")
+		if padding then
+			padding.PaddingLeft = UDim.new(0, 10)
+			padding.PaddingRight = UDim.new(0, 10)
+			padding.PaddingTop = UDim.new(0, 4)
+			padding.PaddingBottom = UDim.new(0, 4)
+		end
+		for _, tab in ipairs(self.Tabs) do
+			tab._button.Size = UDim2.fromOffset(112, 34)
+		end
+		self.SidebarFooter.Visible = false
+		self.SidebarSeparator.Visible = false
+		self.Indicator.Visible = false
+		self.Content.Position = UDim2.fromOffset(0, 106)
+		self.Content.Size = UDim2.new(1, 0, 1, -106)
+	else
+		self.TabList.Position = UDim2.fromOffset(0, 80)
+		self.TabList.Size = UDim2.new(1, 0, 1, -116)
+		self.TabList.ScrollingDirection = Enum.ScrollingDirection.Y
+		self.TabList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+		self.TabLayout.FillDirection = Enum.FillDirection.Vertical
+		self.TabLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+		self.TabLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+		self.TabLayout.Padding = UDim.new(0, 4)
+		local padding = self.TabList:FindFirstChildOfClass("UIPadding")
+		if padding then
+			padding.PaddingLeft = UDim.new(0, 16)
+			padding.PaddingRight = UDim.new(0, 16)
+			padding.PaddingTop = UDim.new(0, 4)
+			padding.PaddingBottom = UDim.new(0, 4)
+		end
+		for _, tab in ipairs(self.Tabs) do
+			tab._button.Size = UDim2.new(1, 0, 0, 38)
+		end
+		self.SidebarFooter.Visible = true
+		self.SidebarFooter.Position = UDim2.new(0, 22, 1, -36)
+		self.SidebarFooter.Size = UDim2.new(1, -44, 0, 22)
+		self.SidebarSeparator.Visible = true
+		self.SidebarSeparator.Position = UDim2.new(0, sidebarWidth, 0, 28)
+		self.Content.Position = UDim2.fromOffset(sidebarWidth + 1, 0)
+		self.Content.Size = UDim2.new(1, -(sidebarWidth + 1), 1, 0)
+		if self.CurrentTab and self._introDone then
+			self:_placeIndicator(self.CurrentTab)
+		end
+	end
+	self.TabList.CanvasPosition = Vector2.zero
+	if self.ResizeHandle then
+		self.ResizeHandle.Visible = not self._responsiveCompact
+	end
+end
+
 function g:_fitToScreen(d)
 	local viewport = self.Gui.AbsoluteSize
 	if viewport.X <= 0 or viewport.Y <= 0 then
 		return
 	end
-	if self.Fullscreen then
-		self._fitScale = 1
-		if self._introDone and self.Open then
-			if d then
-				self.Scale.Scale = 1
-			else
-				b(self.Scale, { Scale = 1 }, 0.12)
-			end
+
+	if self.Responsive then
+		local portrait = viewport.Y > viewport.X
+		local compact = viewport.X < 900 or viewport.Y < 620
+		self._responsiveCompact = compact
+		if compact then
+			local baseWidth = self._baseSize.X.Offset
+			local baseHeight = self._baseSize.Y.Offset
+			local width = math.max(1, math.min(baseWidth, viewport.X - 24))
+			local heightLimit = math.max(1, viewport.Y - (portrait and 96 or 64))
+			local preferredHeight = portrait and math.max(baseHeight, 500) or baseHeight
+			local height = math.min(preferredHeight, heightLimit)
+			self.Root.Size = UDim2.fromOffset(width, height)
+			self.Scale.Scale = 1
+			self._fitScale = 1
+			self.Root.Position = UDim2.fromScale(0.5, 0.5)
+			self:_applyResponsiveLayout(portrait)
+			return
 		end
-		return
+		self.Root.Size = self._baseSize
+		self:_applyResponsiveLayout(false)
 	end
 
-	-- Keep a 32 px safety margin for the window shadow and device edges.
-	-- AbsoluteSize includes the current UIScale, so divide it out to recover
-	-- the unscaled dimensions before calculating the next fit factor.
 	local currentScale = math.max(self.Scale.Scale, 0.001)
 	local baseSize = self.Root.AbsoluteSize / currentScale
 	local availableX = math.max(viewport.X - 64, 1)
@@ -3349,6 +3725,7 @@ function g:_enableResize(i)
 		ZIndex = 20,
 		Parent = self.Root,
 	})
+	self.ResizeHandle = f
 	local g, d =
 		c("ImageLabel", {
 			AnchorPoint = Vector2.new(0.5, 0.5),
@@ -3390,6 +3767,7 @@ function g:_enableResize(i)
 				b(g, { ImageTransparency = 0.8 }, 0.17)
 				if e then
 					self.Root.Size = UDim2.fromOffset(e.X, e.Y)
+					self._baseSize = self.Root.Size
 					e = nil
 				end
 				self:_fitToScreen()
@@ -4041,6 +4419,9 @@ function g:Tab(g, t)
 	})
 	e(k)
 	local q = h(k, a.Stroke, 1)
+	if self._responsivePortrait then
+		k.Size = UDim2.fromOffset(112, 34)
+	end
 	f._button = k
 	local r = g.Icon ~= nil
 	if r then
@@ -4371,6 +4752,10 @@ function g:_indicatorY(a)
 end
 function g:_placeIndicator(d)
 	local a = self.Indicator
+	if self._responsivePortrait then
+		a.Visible = false
+		return
+	end
 	local c = self:_indicatorY(d)
 	if not a.Visible then
 		a.Visible = true
@@ -4460,9 +4845,10 @@ function g:Toggle(a)
 		return
 	end
 	self.Open = a
+	if type(self._silentHubVisibilityChanged) == "function" then
+		pcall(self._silentHubVisibilityChanged, a)
+	end
 	if a then
-		f._nextDisplayOrder = math.max(f._nextDisplayOrder or 999, self.Gui.DisplayOrder or 999) + 1
-		self.Gui.DisplayOrder = f._nextDisplayOrder
 		self.Root.Visible = true
 		b(self.Scale, { Scale = self._fitScale or 1 }, 0.4, Enum.EasingStyle.Back)
 		b(self.Body, { GroupTransparency = 0 }, 0.25)
@@ -4479,35 +4865,6 @@ function g:Toggle(a)
 			end
 		end)
 	end
-end
-function g:SetBackgroundImage(value, transparency)
-	if value == nil or tostring(value):match("^%s*$") then
-		if self.BackgroundImageLabel then
-			self.BackgroundImageLabel:Destroy()
-			self.BackgroundImageLabel = nil
-		end
-		self._backgroundImage = nil
-		return true
-	end
-	local imageContent, imageError = resolveBackgroundImage(value)
-	if not imageContent then
-		return false, imageError or "Invalid background image."
-	end
-	if not self.BackgroundImageLabel or not self.BackgroundImageLabel.Parent then
-		self.BackgroundImageLabel = c("ImageLabel", {
-			Name = "SharedBackgroundImage",
-			Size = UDim2.fromScale(1, 1),
-			BackgroundTransparency = 1,
-			ScaleType = Enum.ScaleType.Crop,
-			ZIndex = 0,
-			Parent = self.Body,
-		})
-		e(self.BackgroundImageLabel, UDim.new(0, 10))
-	end
-	self.BackgroundImageLabel.Image = imageContent
-	self.BackgroundImageLabel.ImageTransparency = math.clamp(tonumber(transparency) or self._backgroundImageTransparency or 0.24, 0, 1)
-	self._backgroundImage = tostring(value)
-	return true
 end
 function g:SetKeepOnScreen(a)
 	self.KeepOnScreen = a ~= false
@@ -4671,6 +5028,10 @@ function g:Destroy()
 		return
 	end
 	self._destroyed = true
+	if type(self._silentHubVisibilityChanged) == "function" then
+		pcall(self._silentHubVisibilityChanged, false)
+		self._silentHubVisibilityChanged = nil
+	end
 	for a, b in ipairs(f.Windows) do
 		if b == self then
 			table.remove(f.Windows, a)
@@ -4689,4 +5050,429 @@ function g:Destroy()
 		self.Gui:Destroy()
 	end)
 end
+
+local Launcher = {}
+Launcher.__index = Launcher
+
+local coreModules = {
+	{ Id = "skins", Title = "Skins", Description = "Open or hide the Skins interface independently.", Icon = "palette", Category = "Appearance" },
+	{ Id = "accessories", Title = "Accessories", Description = "Open or hide the Accessories interface independently.", Icon = "shirt", Category = "Appearance" },
+	{ Id = "animations", Title = "Animations", Description = "Reserved slot for the future Animations module.", Icon = "activity", Category = "Appearance" },
+}
+
+local themeOrder = {
+	"Midnight Graphite", "Obsidian Violet", "Arctic Blue", "Emerald Prestige", "Crimson Noir",
+	"Oceanic", "Titanium Silver", "Amethyst", "Champagne Gold", "Carbon Minimal",
+}
+
+local function entryText(entry)
+	if type(entry) == "string" then
+		return entry, ""
+	end
+	if type(entry) == "table" then
+		return tostring(entry.Name or entry.Title or entry.Username or "Entry"), tostring(entry.Description or entry.Content or entry.Desc or "")
+	end
+	return tostring(entry), ""
+end
+
+function Launcher:_notify(title, content, kind)
+	if self.Window and not self.Window._destroyed then
+		self.Window:Notify({ Title = title, Content = content, Type = kind or "Info", Duration = 4 })
+	end
+end
+
+function Launcher:_bindModuleWindow(module, window)
+	if type(window) ~= "table" or window._silentHubWindow ~= true then
+		return false
+	end
+	window._silentHubVisibilityChanged = function()
+		self:_syncModuleControls(module)
+	end
+	return true
+end
+
+function Launcher:_syncModuleControls(module)
+	local isOpen = module.Window ~= nil and module.Window.Open == true and module.Window._destroyed ~= true
+	local suffix = isOpen and " • Hide" or " • Open"
+	if module.Button then
+		module.Button:SetText(module.Title .. suffix)
+	end
+	if module.HomeButton then
+		module.HomeButton:SetText(module.Title .. suffix)
+	end
+end
+
+function Launcher:RegisterModule(definition)
+	if type(definition) ~= "table" then
+		return nil, "module definition must be a table"
+	end
+	local id = tostring(definition.Id or definition.Name or definition.Title or ""):lower():gsub("[^%w_%-]", "")
+	if id == "" then
+		return nil, "module Id is required"
+	end
+	local factory = definition.Create or definition.Factory
+	if factory ~= nil and type(factory) ~= "function" then
+		return nil, "module Create/Factory must be a function"
+	end
+	if definition.Window ~= nil and (type(definition.Window) ~= "table" or definition.Window._silentHubWindow ~= true) then
+		return nil, "module Window must be created by SilentHub:Window()"
+	end
+	local module = self.Modules[id]
+	if module then
+		module.Title = tostring(definition.Title or definition.Name or module.Title)
+		module.Description = tostring(definition.Description or definition.Desc or module.Description)
+		module.Icon = definition.Icon or module.Icon
+		module.Factory = definition.Create or definition.Factory or module.Factory
+		if definition.BackgroundGroup then
+			module.BackgroundGroup = definition.BackgroundGroup == "Primary" and "Primary" or "Secondary"
+		end
+		if definition.Window then
+			module.Window = definition.Window
+			self:_bindModuleWindow(module, module.Window)
+			if type(module.Window.SetBackgroundGroup) == "function" then
+				module.Window:SetBackgroundGroup(module.BackgroundGroup)
+			end
+		end
+		self:_syncModuleControls(module)
+		return module
+	end
+
+	module = {
+		Id = id,
+		Title = tostring(definition.Title or definition.Name or id),
+		Description = tostring(definition.Description or definition.Desc or ""),
+		Icon = definition.Icon,
+		Category = tostring(definition.Category or "Modules"),
+		Factory = definition.Create or definition.Factory,
+		Window = definition.Window,
+		_creating = false,
+		BackgroundGroup = definition.BackgroundGroup == "Primary" and "Primary" or "Secondary",
+	}
+	self.Modules[id] = module
+	table.insert(self.ModuleOrder, module)
+
+	if not self.ModuleSections[module.Category] then
+		self.ScriptsTab:Section(module.Category)
+		self.ModuleSections[module.Category] = true
+	end
+	module.Button = self.ScriptsTab:Button({
+		Name = module.Title .. " • Open",
+		Desc = module.Description ~= "" and module.Description or "Module slot ready for registration.",
+		Icon = module.Icon or "app-window",
+		Callback = function()
+			self:ToggleModule(id)
+		end,
+	})
+	if id == "skins" or id == "accessories" or id == "animations" then
+		module.HomeButton = self.DashboardTab:Button({
+			Name = module.Title .. " • Open",
+			Desc = module.Description,
+			Icon = module.Icon or "app-window",
+			Callback = function()
+				self:ToggleModule(id)
+			end,
+		})
+	end
+	if module.Window then
+		self:_bindModuleWindow(module, module.Window)
+		if type(module.Window.SetBackgroundGroup) == "function" then
+			module.Window:SetBackgroundGroup(module.BackgroundGroup)
+		end
+	end
+	self:_syncModuleControls(module)
+	return module
+end
+
+function Launcher:ToggleModule(id)
+	id = tostring(id or ""):lower()
+	local module = self.Modules[id]
+	if not module then
+		return false, "module is not registered"
+	end
+	local window = module.Window
+	if window and (window._destroyed or not window.Gui or not window.Gui.Parent) then
+		module.Window = nil
+		window = nil
+	end
+	if not window then
+		if type(module.Factory) ~= "function" then
+			self:_notify(module.Title .. " is not configured", "Register a Create/Factory function that returns a SilentHub window.", "Warning")
+			return false, "module factory is missing"
+		end
+		if module._creating then
+			return false, "module creation is already in progress"
+		end
+		module._creating = true
+		local ok, result = pcall(module.Factory, self, module)
+		module._creating = false
+		if not ok then
+			warn("[SilentHub] module factory failed (" .. module.Id .. "): " .. tostring(result))
+			self:_notify("Could not open " .. module.Title, tostring(result), "Error")
+			return false, result
+		end
+		if type(result) ~= "table" or result._silentHubWindow ~= true or type(result.Toggle) ~= "function" then
+			local message = "module factory must return a SilentHub Window created by Window() or CreateModuleWindow()"
+			self:_notify("Invalid module", message, "Error")
+			return false, message
+		end
+		module.Window = result
+		window = result
+		self:_bindModuleWindow(module, window)
+		if type(window.SetBackgroundGroup) == "function" then
+			window:SetBackgroundGroup(module.BackgroundGroup)
+		end
+		if window.Open == false then
+			window:Toggle(true)
+		end
+	else
+		window:Toggle(not window.Open)
+	end
+	self:_syncModuleControls(module)
+	return true, window.Open == true
+end
+
+function Launcher:SetModuleVisible(id, visible)
+	id = tostring(id or ""):lower()
+	local module = self.Modules[id]
+	if not module then
+		return false, "module is not registered"
+	end
+	if visible then
+		if not module.Window or module.Window._destroyed or not module.Window.Gui or not module.Window.Gui.Parent then
+			module.Window = nil
+			local ok, err = self:ToggleModule(id)
+			if not ok then
+				return false, err
+			end
+		else
+			module.Window:Toggle(true)
+		end
+	else
+		if module.Window and module.Window.Open then
+			module.Window:Toggle(false)
+		end
+	end
+	self:_syncModuleControls(module)
+	return true
+end
+
+function Launcher:DestroyModule(id)
+	id = tostring(id or ""):lower()
+	local module = self.Modules[id]
+	if not module then
+		return false
+	end
+	if module.Window and type(module.Window.Destroy) == "function" then
+		module.Window._silentHubVisibilityChanged = nil
+		module.Window:Destroy()
+	end
+	module.Window = nil
+	self:_syncModuleControls(module)
+	return true
+end
+
+function Launcher:AddCommunity(category, entry)
+	local key = tostring(category or ""):lower()
+	local valid = {
+		collaborators = "Collaborators",
+		friends = "Friends",
+		recommendations = "Recommendations",
+	}
+	local sectionName = valid[key]
+	if not sectionName then
+		return nil, "category must be Collaborators, Friends or Recommendations"
+	end
+	local title, content = entryText(entry)
+	local placeholder = self.CommunityPlaceholders[sectionName]
+	if placeholder then
+		placeholder:Destroy()
+		self.CommunityPlaceholders[sectionName] = nil
+	end
+	local handle = self.CommunityTab:Paragraph({ Name = title, Content = content })
+	table.insert(self.CommunityEntries[sectionName], { Title = title, Content = content, Handle = handle })
+	return handle
+end
+
+function Launcher:CreateModuleWindow(options)
+	options = type(options) == "table" and table.clone(options) or {}
+	options.BackgroundGroup = "Secondary"
+	options.Responsive = options.Responsive ~= false
+	return f:Window(options)
+end
+
+function Launcher:SetTheme(name)
+	return f:SetTheme(name)
+end
+
+function Launcher:SetBackground(group, value, settings)
+	return f:SetBackground(group, value, settings)
+end
+
+function Launcher:Toggle(visible)
+	if self.Window and not self.Window._destroyed then
+		self.Window:Toggle(visible)
+	end
+end
+
+function Launcher:Destroy()
+	for _, module in ipairs(self.ModuleOrder) do
+		if module.Window and type(module.Window.Destroy) == "function" then
+			module.Window:Destroy()
+			module.Window = nil
+		end
+	end
+	if self.Window and not self.Window._destroyed then
+		self.Window:Destroy()
+	end
+	if f.ActiveLauncher == self then
+		f.ActiveLauncher = nil
+		f.Modules = {}
+	end
+end
+
+function f.CreateLauncher(first, second)
+	local options = second or first or {}
+	if type(options) ~= "table" then
+		options = {}
+	end
+	if options.Theme or options.ThemeName then
+		local themeOk, themeError = f:SetTheme(options.Theme or options.ThemeName)
+		if not themeOk then
+			warn("[SilentHub] " .. tostring(themeError))
+		end
+	end
+
+	local windowOptions = table.clone(type(options.WindowOptions) == "table" and options.WindowOptions or {})
+	windowOptions.Name = options.GuiName or windowOptions.Name or "SilentHubLauncher"
+	windowOptions.Title = options.Title or windowOptions.Title or "SilentHub"
+	windowOptions.SubTitle = options.SubTitle or options.Subtitle or windowOptions.SubTitle or "Control Center"
+	windowOptions.Logo = options.Logo or windowOptions.Logo
+	windowOptions.Size = options.Size or windowOptions.Size or UDim2.fromOffset(700, 500)
+	windowOptions.MinSize = options.MinSize or windowOptions.MinSize or Vector2.new(420, 320)
+	windowOptions.MaxSize = options.MaxSize or windowOptions.MaxSize or Vector2.new(900, 680)
+	windowOptions.Responsive = options.Responsive ~= false
+	windowOptions.BackgroundGroup = "Primary"
+	local primaryBackground = options.Background
+	if primaryBackground == nil then
+		primaryBackground = options.Fondo
+	end
+	if primaryBackground == nil then
+		primaryBackground = windowOptions.Background
+	end
+	windowOptions.Background = nil
+	if primaryBackground ~= nil then
+		f:SetBackground("Primary", primaryBackground, options.BackgroundOptions or windowOptions.BackgroundOptions)
+	end
+	if options.SecondaryBackground ~= nil then
+		f:SetBackground("Secondary", options.SecondaryBackground, options.SecondaryBackgroundOptions)
+	end
+	if options.Loading ~= nil then
+		windowOptions.Loading = options.Loading
+	elseif windowOptions.Loading == nil then
+		windowOptions.Loading = { Duration = 0.85, Title = "SilentHub", Text = "Opening Main Panel" }
+	end
+
+	local window = f:Window(windowOptions)
+	local self = setmetatable({
+		Window = window,
+		Modules = {},
+		ModuleOrder = {},
+		ModuleSections = {},
+		CommunityEntries = { Collaborators = {}, Friends = {}, Recommendations = {} },
+		CommunityPlaceholders = {},
+	}, Launcher)
+	f.Modules = self.Modules
+	f.ActiveLauncher = self
+
+	self.DashboardTab = window:Tab({ Name = "Overview", Desc = "Your central SilentHub dashboard.", Icon = "layout-dashboard" })
+	self.ScriptsTab = window:Tab({ Name = "Scripts", Desc = "Open, hide and manage registered modules.", Icon = "blocks" })
+	self.CommunityTab = window:Tab({ Name = "Community", Desc = "Collaborators, friends and recommendations.", Icon = "users" })
+	self.AppearanceTab = window:Tab({ Name = "Appearance", Desc = "Global color themes.", Icon = "palette" })
+
+	self.DashboardTab:Section("Control Center")
+	self.DashboardTab:Paragraph({
+		Name = "Main Panel",
+		Content = "Your central SilentHub interface. Open and manage registered scripts here; the bootstrap loader only starts this panel.",
+	})
+	self.DashboardTab:Section("Quick access")
+
+	self.ScriptsTab:Section("Registered modules")
+	self.ScriptsTab:Paragraph({
+		Name = "Module management",
+		Content = "Each entry has an independent window and visibility state. Modules are created once and reused when hidden or shown again.",
+	})
+
+	self.CommunityTab:Section("Collaborators")
+	self.CommunityPlaceholders.Collaborators = self.CommunityTab:Paragraph({ Name = "No collaborators yet", Content = "Add entries through the Collaborators configuration or AddCommunity()." })
+	self.CommunityTab:Section("Friends")
+	self.CommunityPlaceholders.Friends = self.CommunityTab:Paragraph({ Name = "No friends yet", Content = "Add entries through the Friends configuration or AddCommunity()." })
+	self.CommunityTab:Section("Recommendations")
+	self.CommunityPlaceholders.Recommendations = self.CommunityTab:Paragraph({ Name = "No recommendations yet", Content = "Add entries through the Recommendations configuration or AddCommunity()." })
+
+	self.AppearanceTab:Section("Global theme")
+	self.AppearanceTab:Dropdown({
+		Name = "Interface palette",
+		Desc = "Changes every open and future SilentHub window.",
+		Options = themeOrder,
+		Default = f.ThemeName,
+		Callback = function(value)
+			local ok, err = f:SetTheme(value)
+			if not ok then
+				self:_notify("Theme not changed", tostring(err), "Error")
+			else
+				self:_notify("Theme applied", value .. " is now global.", "Success")
+			end
+		end,
+	})
+
+	if type(options.Backgrounds) == "table" then
+		for _, group in ipairs({ "Primary", "Secondary" }) do
+			local config = options.Backgrounds[group]
+			if type(config) == "table" then
+				f:SetBackground(group, config.Image or config.Value, config)
+			elseif type(config) == "string" or type(config) == "number" then
+				f:SetBackground(group, config)
+			end
+		end
+	end
+
+	local definitions = {}
+	if type(options.Modules) == "table" then
+		for _, definition in ipairs(options.Modules) do
+			if type(definition) == "table" then
+				local id = tostring(definition.Id or definition.Name or definition.Title or ""):lower():gsub("[^%w_%-]", "")
+				definitions[id] = definition
+				self:RegisterModule(definition)
+			end
+		end
+	end
+	for _, core in ipairs(coreModules) do
+		if not definitions[core.Id] then
+			local suppliedFactory = options[core.Id:gsub("^%l", string.upper)]
+			local definition = table.clone(core)
+			if type(suppliedFactory) == "function" then
+				definition.Create = suppliedFactory
+			elseif type(suppliedFactory) == "table" then
+				for key, value in pairs(suppliedFactory) do
+					definition[key] = value
+				end
+			end
+			self:RegisterModule(definition)
+		end
+	end
+
+	for _, category in ipairs({ "Collaborators", "Friends", "Recommendations" }) do
+		local entries = options[category]
+		if type(entries) == "table" then
+			for _, entry in ipairs(entries) do
+				self:AddCommunity(category, entry)
+			end
+		end
+	end
+
+	return self
+end
+
+f.Launcher = Launcher
+f.CreateMainLoader = f.CreateLauncher
 return f
