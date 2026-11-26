@@ -2664,28 +2664,52 @@ function f.Window(ab, k)
 	})
 	j.Content = E
 	local function updateResponsiveLayout()
-		local viewportWidth = s.AbsoluteSize.X
+		local viewportWidth = 0
+		if s then
+			local ok, viewport = pcall(function()
+				return s.AbsoluteSize
+			end)
+			if ok and viewport then
+				viewportWidth = viewport.X
+			end
+		end
+		if viewportWidth <= 0 then
+			return
+		end
+
 		local compact = viewportWidth < 560
 		local sidebarWidth = compact and math.clamp(math.floor(viewportWidth * 0.29), 96, 132) or 170
-		C.Size = UDim2.new(0, sidebarWidth, 1, 0)
-		sidebarDivider.Position = UDim2.new(0, sidebarWidth, 0, 28)
-		J.Size = UDim2.new(1, 0, 0, compact and 52 or 72)
-		X.Position = UDim2.fromOffset(compact and 12 or 22, compact and 12 or 27)
-		X.Size = UDim2.fromOffset(compact and 24 or 30, compact and 24 or 28)
-		titleLabel.Visible = not compact
-		subtitleLabel.Visible = not compact
-		v.Position = UDim2.fromOffset(0, compact and 60 or 80)
-		v.Size = UDim2.new(1, 0, 1, compact and -98 or -116)
-		tabsPadding.PaddingLeft = UDim.new(0, compact and 8 or 16)
-		tabsPadding.PaddingRight = UDim.new(0, compact and 8 or 16)
-		S.Position = UDim2.new(0, compact and 8 or 22, 1, compact and -30 or -36)
-		S.Size = UDim2.new(1, compact and -16 or -44, 0, 22)
-		Z.Visible = not compact
-		E.Position = UDim2.fromOffset(sidebarWidth + 1, 0)
-		E.Size = UDim2.new(1, -sidebarWidth - 1, 1, 0)
+		local function setProperty(object, property, value)
+			if object then
+				pcall(function()
+					object[property] = value
+				end)
+			end
+		end
+
+		-- Every reference is guarded: a missing optional visual must not abort
+		-- window creation or prevent the remaining layout from being applied.
+		setProperty(C, "Size", UDim2.new(0, sidebarWidth, 1, 0))
+		setProperty(sidebarDivider, "Position", UDim2.new(0, sidebarWidth, 0, 28))
+		setProperty(J, "Size", UDim2.new(1, 0, 0, compact and 52 or 72))
+		setProperty(X, "Position", UDim2.fromOffset(compact and 12 or 22, compact and 12 or 27))
+		setProperty(X, "Size", UDim2.fromOffset(compact and 24 or 30, compact and 24 or 28))
+		setProperty(titleLabel, "Visible", not compact)
+		setProperty(subtitleLabel, "Visible", not compact)
+		setProperty(v, "Position", UDim2.fromOffset(0, compact and 60 or 80))
+		setProperty(v, "Size", UDim2.new(1, 0, 1, compact and -98 or -116))
+		setProperty(tabsPadding, "PaddingLeft", UDim.new(0, compact and 8 or 16))
+		setProperty(tabsPadding, "PaddingRight", UDim.new(0, compact and 8 or 16))
+		setProperty(S, "Position", UDim2.new(0, compact and 8 or 22, 1, compact and -30 or -36))
+		setProperty(S, "Size", UDim2.new(1, compact and -16 or -44, 0, 22))
+		setProperty(Z, "Visible", not compact)
+		setProperty(E, "Position", UDim2.fromOffset(sidebarWidth + 1, 0))
+		setProperty(E, "Size", UDim2.new(1, -sidebarWidth - 1, 1, 0))
 	end
 	updateResponsiveLayout()
-	table.insert(j._connections, s:GetPropertyChangedSignal(I):Connect(updateResponsiveLayout))
+	if s then
+		table.insert(j._connections, s:GetPropertyChangedSignal(I):Connect(updateResponsiveLayout))
+	end
 	j._outLayer = c(H, {
 		Name = "TransitionOut",
 		Size = UDim2.fromScale(1, 1),
