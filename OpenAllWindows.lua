@@ -45,12 +45,12 @@ local Library = loadLibrary()
 if type(Library.Window) ~= "function" then error("SilentHub.Window() is missing.") end
 
 -- Colon syntax is intentional: the current constructor accepts options as arg #2.
-local function createWindow(name, title, subtitle, icon, size, minimum, maximum, key)
+local function createWindow(name, title, subtitle, size, minimum, maximum, key, logo)
     return Library:Window({
         Name = name,
         Title = title,
         Subtitle = subtitle,
-        Icon = icon,
+        Logo = logo,
         Size = UDim2.fromOffset(size.X, size.Y),
         MinSize = Vector2.new(minimum.X, minimum.Y),
         MaxSize = Vector2.new(maximum.X, maximum.Y),
@@ -60,13 +60,13 @@ local function createWindow(name, title, subtitle, icon, size, minimum, maximum,
     })
 end
 
-local main = createWindow("MainWindow", "SilentHub", "Multi-window UI shell", "layout-dashboard",
-    Vector2.new(500, 360), Vector2.new(340, 260), Vector2.new(760, 560), Enum.KeyCode.RightControl)
-local loader = createWindow("LoaderWindow", "Loader", "Placeholder interface", "package-open",
+local main = createWindow("MainWindow", "SilentHub", "Multi-window UI shell",
+    Vector2.new(760, 560), Vector2.new(480, 360), Vector2.new(900, 700), Enum.KeyCode.RightControl)
+local loader = createWindow("LoaderWindow", "Loader", "Placeholder interface",
     Vector2.new(340, 250), Vector2.new(280, 210), Vector2.new(560, 420), Enum.KeyCode.RightShift)
-local skins = createWindow("SkinsWindow", "Skins", "Placeholder interface", "palette",
+local skins = createWindow("SkinsWindow", "Skins", "Placeholder interface",
     Vector2.new(420, 320), Vector2.new(300, 230), Vector2.new(680, 500), Enum.KeyCode.LeftAlt)
-local accessories = createWindow("AccessoriesWindow", "Accessories", "Placeholder interface", "shapes",
+local accessories = createWindow("AccessoriesWindow", "Accessories", "Placeholder interface",
     Vector2.new(420, 320), Vector2.new(300, 230), Vector2.new(680, 500), Enum.KeyCode.Home)
 
 -- Main panel: status, dialogs and window management.
@@ -148,15 +148,16 @@ local windows = { main, loader, skins, accessories }
 local function clamp(value, low, high) return math.max(low, math.min(value, high)) end
 local function place(window, targetX, targetY)
     local screen = window.Gui.AbsoluteSize
-    local size = window.Root.Size
     if screen.X <= 0 or screen.Y <= 0 then return end
 
-    local fit = math.min(1, (screen.X - 24) / math.max(size.X.Offset, 1), (screen.Y - 24) / math.max(size.Y.Offset, 1))
-    window.Scale.Scale = math.min(window.Scale.Scale, fit)
-    local half = window.Root.AbsoluteSize / 2
-    local minX, maxX = math.min(half.X + 12, screen.X / 2), math.max(screen.X - half.X - 12, screen.X / 2)
-    local minY, maxY = math.min(half.Y + 12, screen.Y / 2), math.max(screen.Y - half.Y - 12, screen.Y / 2)
-    window.Root.Position = UDim2.fromOffset(clamp(targetX, minX, maxX), clamp(targetY, minY, maxY))
+    -- The library owns UIScale. Do not override Scale here; doing so would
+    -- desynchronize its cached fit factor when the window is shown again.
+    local half = window.Root.AbsoluteSize / 2 + Vector2.new(44, 44)
+    local minX, maxX = half.X, screen.X - half.X
+    local minY, maxY = half.Y, screen.Y - half.Y
+    local x = maxX < minX and screen.X / 2 or clamp(targetX, minX, maxX)
+    local y = maxY < minY and screen.Y / 2 or clamp(targetY, minY, maxY)
+    window.Root.Position = UDim2.fromOffset(x, y)
 end
 
 task.spawn(function()
