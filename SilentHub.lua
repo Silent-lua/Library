@@ -8,6 +8,7 @@
 --   SilentHub:CreateLauncher(options) for a central modular script hub
 --   SilentHub:SetTheme(name) and SilentHub:SetBackground(group, image, options)
 --   launcher:RegisterModule({ Id, Title, Create = function(launcher, module) ... end })
+--   launcher:AddConfigurationItem({ Type = "Toggle", Name = "...", Flag = "..." })
 --   tab:Section(), tab:Button(), tab:Toggle(), tab:Slider(), tab:Stepper()
 --   tab:Dropdown(), tab:Input(), tab:Keybind(), tab:ColorPicker()
 --   tab:Progress(), tab:Paragraph(), tab:Label(), tab:Divider()
@@ -97,74 +98,74 @@ end
 
 f.Themes = {
 	["Midnight Graphite"] = palette({
-		Background = { 20, 16, 20 }, Surface = { 24, 19, 24 }, Surface2 = { 28, 22, 28 },
-		Surface3 = { 42, 36, 43 }, Stroke = { 40, 32, 41 }, StrokeHover = { 88, 70, 90 },
-		Accent = { 235, 199, 246 }, AccentSecondary = { 159, 132, 185 }, AccentDark = { 24, 18, 26 },
-		Text = { 233, 229, 234 }, Muted = { 125, 115, 126 }, Warning = { 240, 176, 108 },
-		Success = { 150, 220, 170 }, Error = { 240, 120, 120 },
+		Background = { 11, 16, 24 }, Surface = { 18, 27, 41 }, Surface2 = { 24, 38, 58 },
+		Surface3 = { 36, 54, 77 }, Stroke = { 46, 64, 85 }, StrokeHover = { 113, 132, 156 },
+		Accent = { 167, 139, 250 }, AccentSecondary = { 56, 217, 199 }, AccentDark = { 31, 25, 52 },
+		Text = { 237, 243, 255 }, Muted = { 154, 170, 192 }, Warning = { 247, 185, 85 },
+		Success = { 61, 220, 151 }, Error = { 248, 113, 113 },
 	}),
 	["Obsidian Violet"] = palette({
-		Background = { 15, 12, 23 }, Surface = { 23, 18, 35 }, Surface2 = { 32, 25, 48 },
-		Surface3 = { 48, 37, 69 }, Stroke = { 56, 43, 78 }, StrokeHover = { 111, 83, 149 },
-		Accent = { 177, 126, 255 }, AccentSecondary = { 226, 157, 255 }, AccentDark = { 24, 15, 39 },
-		Text = { 243, 237, 255 }, Muted = { 158, 146, 179 }, Warning = { 255, 194, 112 },
-		Success = { 117, 218, 166 }, Error = { 255, 112, 139 },
+		Background = { 15, 11, 25 }, Surface = { 27, 20, 43 }, Surface2 = { 39, 28, 61 },
+		Surface3 = { 54, 38, 80 }, Stroke = { 69, 51, 98 }, StrokeHover = { 137, 105, 177 },
+		Accent = { 187, 145, 255 }, AccentSecondary = { 240, 145, 198 }, AccentDark = { 43, 27, 68 },
+		Text = { 247, 241, 255 }, Muted = { 181, 164, 204 }, Warning = { 246, 193, 119 },
+		Success = { 105, 219, 174 }, Error = { 255, 112, 145 },
 	}),
 	["Arctic Blue"] = palette({
-		Background = { 12, 20, 30 }, Surface = { 17, 29, 43 }, Surface2 = { 23, 39, 57 },
-		Surface3 = { 34, 55, 77 }, Stroke = { 39, 61, 82 }, StrokeHover = { 77, 133, 168 },
-		Accent = { 116, 205, 255 }, AccentSecondary = { 152, 239, 235 }, AccentDark = { 10, 27, 40 },
-		Text = { 231, 245, 255 }, Muted = { 139, 165, 184 }, Warning = { 255, 193, 112 },
-		Success = { 102, 222, 183 }, Error = { 255, 121, 131 },
+		Background = { 8, 22, 34 }, Surface = { 14, 35, 53 }, Surface2 = { 21, 53, 76 },
+		Surface3 = { 31, 73, 101 }, Stroke = { 43, 91, 120 }, StrokeHover = { 105, 165, 193 },
+		Accent = { 100, 216, 255 }, AccentSecondary = { 255, 173, 111 }, AccentDark = { 12, 43, 62 },
+		Text = { 235, 247, 255 }, Muted = { 149, 181, 201 }, Warning = { 255, 196, 110 },
+		Success = { 93, 221, 183 }, Error = { 255, 119, 131 },
 	}),
 	["Emerald Prestige"] = palette({
-		Background = { 12, 22, 20 }, Surface = { 17, 32, 28 }, Surface2 = { 23, 43, 37 },
-		Surface3 = { 34, 61, 51 }, Stroke = { 39, 65, 55 }, StrokeHover = { 72, 132, 104 },
-		Accent = { 104, 218, 164 }, AccentSecondary = { 194, 225, 139 }, AccentDark = { 9, 31, 23 },
-		Text = { 232, 247, 239 }, Muted = { 139, 170, 154 }, Warning = { 242, 192, 105 },
-		Success = { 104, 225, 159 }, Error = { 245, 115, 119 },
+		Background = { 8, 23, 19 }, Surface = { 15, 38, 30 }, Surface2 = { 22, 55, 42 },
+		Surface3 = { 32, 75, 57 }, Stroke = { 43, 91, 68 }, StrokeHover = { 104, 157, 127 },
+		Accent = { 83, 224, 160 }, AccentSecondary = { 222, 193, 116 }, AccentDark = { 13, 45, 32 },
+		Text = { 235, 250, 241 }, Muted = { 148, 180, 160 }, Warning = { 245, 191, 91 },
+		Success = { 83, 224, 160 }, Error = { 244, 111, 119 },
 	}),
 	["Crimson Noir"] = palette({
-		Background = { 24, 13, 17 }, Surface = { 34, 18, 23 }, Surface2 = { 47, 24, 31 },
-		Surface3 = { 67, 34, 43 }, Stroke = { 73, 38, 47 }, StrokeHover = { 145, 69, 83 },
-		Accent = { 245, 105, 126 }, AccentSecondary = { 255, 166, 116 }, AccentDark = { 43, 12, 21 },
-		Text = { 252, 237, 240 }, Muted = { 175, 139, 147 }, Warning = { 255, 185, 105 },
-		Success = { 123, 213, 155 }, Error = { 255, 105, 120 },
+		Background = { 25, 10, 17 }, Surface = { 39, 16, 26 }, Surface2 = { 56, 23, 36 },
+		Surface3 = { 76, 32, 48 }, Stroke = { 92, 43, 59 }, StrokeHover = { 166, 91, 108 },
+		Accent = { 245, 92, 122 }, AccentSecondary = { 255, 179, 102 }, AccentDark = { 55, 16, 30 },
+		Text = { 255, 240, 243 }, Muted = { 185, 145, 154 }, Warning = { 255, 190, 102 },
+		Success = { 115, 220, 159 }, Error = { 255, 92, 112 },
 	}),
 	["Oceanic"] = palette({
-		Background = { 10, 23, 29 }, Surface = { 14, 34, 42 }, Surface2 = { 19, 46, 56 },
-		Surface3 = { 29, 65, 76 }, Stroke = { 35, 70, 80 }, StrokeHover = { 63, 135, 148 },
-		Accent = { 69, 203, 207 }, AccentSecondary = { 87, 157, 237 }, AccentDark = { 7, 37, 43 },
-		Text = { 226, 246, 247 }, Muted = { 132, 168, 173 }, Warning = { 242, 190, 111 },
-		Success = { 101, 218, 178 }, Error = { 249, 117, 123 },
+		Background = { 7, 23, 29 }, Surface = { 12, 37, 45 }, Surface2 = { 18, 55, 65 },
+		Surface3 = { 26, 76, 88 }, Stroke = { 36, 91, 103 }, StrokeHover = { 84, 163, 167 },
+		Accent = { 61, 213, 207 }, AccentSecondary = { 255, 154, 116 }, AccentDark = { 8, 46, 53 },
+		Text = { 232, 250, 249 }, Muted = { 139, 180, 181 }, Warning = { 246, 190, 105 },
+		Success = { 89, 222, 177 }, Error = { 255, 112, 122 },
 	}),
 	["Titanium Silver"] = palette({
-		Background = { 20, 23, 27 }, Surface = { 29, 33, 38 }, Surface2 = { 39, 44, 51 },
-		Surface3 = { 56, 62, 70 }, Stroke = { 63, 69, 77 }, StrokeHover = { 112, 123, 135 },
-		Accent = { 190, 207, 222 }, AccentSecondary = { 125, 171, 203 }, AccentDark = { 27, 34, 41 },
-		Text = { 239, 243, 247 }, Muted = { 151, 162, 173 }, Warning = { 243, 189, 112 },
-		Success = { 132, 211, 172 }, Error = { 241, 118, 126 },
+		Background = { 17, 21, 27 }, Surface = { 27, 33, 41 }, Surface2 = { 39, 47, 58 },
+		Surface3 = { 54, 64, 77 }, Stroke = { 69, 82, 98 }, StrokeHover = { 125, 145, 165 },
+		Accent = { 135, 190, 255 }, AccentSecondary = { 238, 179, 113 }, AccentDark = { 24, 42, 61 },
+		Text = { 242, 246, 251 }, Muted = { 157, 171, 188 }, Warning = { 245, 190, 105 },
+		Success = { 117, 216, 170 }, Error = { 243, 112, 121 },
 	}),
 	["Amethyst"] = palette({
-		Background = { 21, 13, 29 }, Surface = { 31, 19, 43 }, Surface2 = { 42, 27, 59 },
-		Surface3 = { 61, 39, 82 }, Stroke = { 67, 43, 87 }, StrokeHover = { 127, 83, 158 },
-		Accent = { 199, 144, 255 }, AccentSecondary = { 244, 160, 222 }, AccentDark = { 36, 17, 50 },
-		Text = { 246, 237, 255 }, Muted = { 167, 145, 185 }, Warning = { 255, 195, 115 },
-		Success = { 128, 220, 174 }, Error = { 255, 118, 145 },
+		Background = { 20, 12, 30 }, Surface = { 33, 20, 47 }, Surface2 = { 48, 29, 68 },
+		Surface3 = { 66, 39, 91 }, Stroke = { 81, 51, 108 }, StrokeHover = { 145, 104, 173 },
+		Accent = { 203, 151, 255 }, AccentSecondary = { 255, 194, 111 }, AccentDark = { 43, 23, 62 },
+		Text = { 249, 241, 255 }, Muted = { 176, 153, 194 }, Warning = { 255, 194, 111 },
+		Success = { 118, 221, 169 }, Error = { 255, 115, 143 },
 	}),
 	["Champagne Gold"] = palette({
-		Background = { 25, 21, 16 }, Surface = { 36, 30, 22 }, Surface2 = { 48, 40, 29 },
-		Surface3 = { 68, 56, 39 }, Stroke = { 77, 64, 46 }, StrokeHover = { 148, 120, 76 },
-		Accent = { 226, 190, 119 }, AccentSecondary = { 238, 219, 174 }, AccentDark = { 43, 32, 15 },
-		Text = { 249, 243, 230 }, Muted = { 178, 162, 135 }, Warning = { 250, 188, 104 },
-		Success = { 151, 210, 158 }, Error = { 242, 119, 111 },
+		Background = { 24, 20, 15 }, Surface = { 38, 31, 22 }, Surface2 = { 55, 44, 30 },
+		Surface3 = { 74, 59, 39 }, Stroke = { 91, 73, 49 }, StrokeHover = { 158, 128, 82 },
+		Accent = { 235, 194, 119 }, AccentSecondary = { 211, 145, 143 }, AccentDark = { 48, 36, 19 },
+		Text = { 250, 244, 232 }, Muted = { 184, 166, 136 }, Warning = { 255, 196, 104 },
+		Success = { 145, 211, 157 }, Error = { 238, 112, 107 },
 	}),
 	["Carbon Minimal"] = palette({
-		Background = { 12, 13, 15 }, Surface = { 20, 21, 23 }, Surface2 = { 29, 30, 33 },
-		Surface3 = { 43, 45, 48 }, Stroke = { 49, 51, 55 }, StrokeHover = { 102, 106, 113 },
-		Accent = { 220, 224, 230 }, AccentSecondary = { 142, 177, 208 }, AccentDark = { 18, 19, 22 },
-		Text = { 242, 244, 247 }, Muted = { 143, 148, 155 }, Warning = { 238, 190, 112 },
-		Success = { 128, 211, 166 }, Error = { 243, 116, 124 },
+		Background = { 10, 12, 15 }, Surface = { 20, 23, 28 }, Surface2 = { 31, 36, 43 },
+		Surface3 = { 45, 52, 61 }, Stroke = { 60, 69, 80 }, StrokeHover = { 126, 141, 158 },
+		Accent = { 214, 225, 239 }, AccentSecondary = { 125, 225, 187 }, AccentDark = { 29, 37, 46 },
+		Text = { 244, 247, 252 }, Muted = { 151, 163, 178 }, Warning = { 243, 192, 105 },
+		Success = { 125, 225, 187 }, Error = { 246, 105, 119 },
 	}),
 }
 f.ThemeName = "Midnight Graphite"
@@ -993,16 +994,50 @@ function j:Button(d)
 			end
 		end
 	end
-	y(c, "chevron-right", e and a.AccentDark or a.Muted, UDim2.new(1, -30, 0.5, 0))
+	local chevron = y(c, "chevron-right", e and a.AccentDark or a.Muted, UDim2.new(1, -30, 0.5, 0))
+	local preview = type(d.PalettePreview) == "table" and d.PalettePreview or nil
+	if preview and #preview > 0 then
+		local count = math.min(#preview, 6)
+		for index = 1, count do
+			local chip = c("Frame", {
+				AnchorPoint = Vector2.new(1, 0.5),
+				Position = UDim2.new(1, -14 - (count - index) * 24, 0.5, 0),
+				Size = UDim2.fromOffset(20, 32),
+				BackgroundColor3 = preview[index],
+				BorderSizePixel = 0,
+				Parent = c,
+			})
+			chip:SetAttribute("SilentHubFixedPaletteSwatch", true)
+			e(chip, UDim.new(0, 4))
+			h(chip, a.StrokeHover, 0.25, 1)
+		end
+		local reserved = count * 24 + 45
+		chevron.Position = UDim2.new(1, -(reserved - 3), 0.5, 0)
+		for _, child in ipairs(c:GetChildren()) do
+			if child:IsA("TextLabel") then
+				child.Size = UDim2.new(1, -(14 + reserved), child.Size.Y.Scale, child.Size.Y.Offset)
+			end
+		end
+	end
 	c.MouseButton1Click:Connect(function()
 		ah(c)
 		k(d.Callback)
 	end)
-	return n(self, d, {
+	local handle = n(self, d, {
 		SetText = function(b, a)
 			j.Text = a
 		end,
 	}, c, "Button")
+	if preview then
+		function handle:SetSelected(selected)
+			if not c.Parent then
+				return
+			end
+			b(c, { BackgroundColor3 = selected and a.Surface3 or a.Surface2 }, 0.14)
+			b(f, { Color = selected and a.Accent or a.Stroke, Transparency = selected and 0.08 or 0 }, 0.14)
+		end
+	end
+	return handle
 end
 function j:Toggle(f)
 	local i, o
@@ -2579,6 +2614,9 @@ local function remapThemeColors(gui, oldTheme, newTheme)
 	end
 	for _, instance in ipairs(gui:GetDescendants()) do
 		if instance:IsA("GuiObject") then
+			if instance:GetAttribute("SilentHubFixedPaletteSwatch") then
+				continue
+			end
 			for _, property in ipairs({ "BackgroundColor3", "TextColor3", "ImageColor3", "ScrollBarImageColor3", "PlaceholderColor3" }) do
 				local ok, current = pcall(function()
 					return instance[property]
@@ -2628,6 +2666,10 @@ function f:SetTheme(themeName)
 		end
 	end
 	f.ThemeName = themeName
+	local activeLauncher = f.ActiveLauncher
+	if activeLauncher and type(activeLauncher._syncThemeButtons) == "function" then
+		activeLauncher:_syncThemeButtons()
+	end
 	return true
 end
 
@@ -3584,10 +3626,10 @@ function g:_fitToScreen(d)
 		if compact then
 			local baseWidth = self._baseSize.X.Offset
 			local baseHeight = self._baseSize.Y.Offset
-			local width = math.max(1, math.min(baseWidth, viewport.X - 24))
-			local heightLimit = math.max(1, viewport.Y - (portrait and 96 or 64))
-			local preferredHeight = portrait and math.max(baseHeight, 500) or baseHeight
-			local height = math.min(preferredHeight, heightLimit)
+			local width = math.max(1, math.min(baseWidth, viewport.X - 32))
+			local heightLimit = math.max(1, viewport.Y - 48)
+			-- Keep each window's authored footprint; responsive mode may shrink it but never inflate it.
+			local height = math.min(baseHeight, heightLimit)
 			self.Root.Size = UDim2.fromOffset(width, height)
 			self.Scale.Scale = 1
 			self._fitScale = 1
@@ -5272,25 +5314,248 @@ function Launcher:DestroyModule(id)
 end
 
 function Launcher:AddCommunity(category, entry)
-	local key = tostring(category or ""):lower()
-	local valid = {
-		collaborators = "Collaborators",
-		friends = "Friends",
-		recommendations = "Recommendations",
-	}
-	local sectionName = valid[key]
-	if not sectionName then
-		return nil, "category must be Collaborators, Friends or Recommendations"
+	return nil, "Community entries are configured in the bootstrap Loader source."
+end
+
+function Launcher:AddConfigurationItem(definition)
+	if type(definition) ~= "table" then
+		return nil, "configuration item must be a table"
 	end
-	local title, content = entryText(entry)
-	local placeholder = self.CommunityPlaceholders[sectionName]
-	if placeholder then
-		placeholder:Destroy()
-		self.CommunityPlaceholders[sectionName] = nil
+	local itemType = tostring(definition.Type or definition.Control or "Toggle")
+	local tab = self.ConfigurationTab
+	if not tab then
+		return nil, "Configuration tab is unavailable"
 	end
-	local handle = self.CommunityTab:Paragraph({ Name = title, Content = content })
-	table.insert(self.CommunityEntries[sectionName], { Title = title, Content = content, Handle = handle })
+	local settings = table.clone(type(definition.Settings) == "table" and definition.Settings or definition)
+	settings.Type = nil
+	settings.Control = nil
+	settings.Settings = nil
+	local creator = tab[itemType]
+	if type(creator) ~= "function" then
+		return nil, "unsupported configuration control: " .. itemType
+	end
+	local handle
+	if itemType == "Section" then
+		handle = creator(tab, settings.Name or settings.Title or "Custom")
+	elseif itemType == "Divider" then
+		handle = creator(tab)
+	else
+		local callback = settings.Callback
+		if type(callback) == "function" then
+			settings.Callback = function(...)
+				return callback(self, ...)
+			end
+		end
+		handle = creator(tab, settings)
+	end
+	self.ConfigurationItems = self.ConfigurationItems or {}
+	table.insert(self.ConfigurationItems, handle)
 	return handle
+end
+
+function Launcher:_buildConfiguration(options)
+	local tab = self.ConfigurationTab
+	local window = self.Window
+	local configName = tostring(options.DefaultConfigName or window.ConfigName or "default")
+	local function safeName(value)
+		value = tostring(value or ""):gsub("^%s+", ""):gsub("%s+$", "")
+		value = value:gsub("[^%w_%- ]", ""):gsub("%s+", "-"):sub(1, 40)
+		return value ~= "" and value or "default"
+	end
+	local function selectedName()
+		local typed = self.ConfigNameInput and self.ConfigNameInput:Get() or ""
+		local chosen = self.ConfigDropdown and self.ConfigDropdown:Get() or nil
+		return safeName(typed ~= "" and typed or chosen or configName)
+	end
+	local function refreshConfigs(preferred)
+		local names = window:ListConfigs()
+		if self.ConfigDropdown then
+			self.ConfigDropdown:Refresh(names, true)
+			if preferred then
+				local found = false
+				for _, name in ipairs(names) do
+					if name == preferred then found = true break end
+				end
+				if found then self.ConfigDropdown:Set(preferred, true) end
+			end
+		end
+	end
+	local function persistAutoLoad(enabled, name)
+		if type(options.OnAutoLoadChanged) == "function" then
+			local ok, err = pcall(options.OnAutoLoadChanged, enabled == true, safeName(name or selectedName()))
+			if not ok then warn("[SilentHub] could not persist AutoLoad: " .. tostring(err)) end
+		end
+	end
+
+	tab:Section("Colores")
+	tab:Paragraph({
+		Name = "Global color system",
+		Content = "Choose a complete palette with layered surfaces, two distinct accents, dedicated status colors and high-contrast typography. The selected palette updates every open and future SilentHub window.",
+	})
+	self.ThemeButtons = {}
+	local themeDescriptions = {
+		["Midnight Graphite"] = "Graphite · Violet + teal",
+		["Obsidian Violet"] = "Obsidian · Lavender + rose",
+		["Arctic Blue"] = "Navy · Ice blue + coral",
+		["Emerald Prestige"] = "Evergreen · Mint + champagne",
+		["Crimson Noir"] = "Burgundy · Ruby + copper",
+		["Oceanic"] = "Deep ocean · Turquoise + coral",
+		["Titanium Silver"] = "Titanium · Electric blue + amber",
+		["Amethyst"] = "Plum · Amethyst + gold",
+		["Champagne Gold"] = "Warm graphite · Gold + rose",
+		["Carbon Minimal"] = "Carbon · Platinum + mint",
+	}
+	for _, themeName in ipairs(themeOrder) do
+		local theme = f.Themes[themeName]
+		self.ThemeButtons[themeName] = tab:Button({
+			Name = themeName,
+			Desc = themeDescriptions[themeName] or "Coordinated high-contrast palette",
+			Icon = "palette",
+			PalettePreview = {
+				theme.Background,
+				theme.Surface2,
+				theme.Surface3,
+				theme.Accent,
+				theme.AccentSecondary,
+				theme.Text,
+			},
+			Callback = function()
+				local ok, err = f:SetTheme(themeName)
+				if not ok then
+					self:_notify("Theme not changed", tostring(err), "Error")
+				else
+					if self.Window and type(self.Window._autoSave) == "function" then
+						self.Window:_autoSave()
+					end
+					self:_notify("Colors applied", themeName .. " is now global.", "Success")
+				end
+			end,
+		})
+	end
+	local themeState = {
+		_type = "Theme",
+		Get = function() return f.ThemeName end,
+		Set = function(_, value)
+			if type(value) == "string" then f:SetTheme(value) end
+		end,
+	}
+	f.Flags.SilentHub_GlobalTheme = themeState
+	self:_syncThemeButtons()
+
+	tab:Section("Configuration files")
+	self.ConfigNameInput = tab:Input({
+		Name = "Configuration name",
+		Desc = "Name used when saving or loading a configuration.",
+		Default = configName,
+		Placeholder = "default",
+	})
+	self.ConfigDropdown = tab:Dropdown({
+		Name = "Saved configurations",
+		Desc = "Select a configuration to load or delete.",
+		Options = window:ListConfigs(),
+		Default = configName,
+		Callback = function(value)
+			if value then
+				self.ConfigNameInput:Set(value, true)
+				if self.AutoLoadToggle and self.AutoLoadToggle:Get() then
+					persistAutoLoad(true, value)
+				end
+			end
+		end,
+	})
+	tab:Button({
+		Name = "Save",
+		Desc = "Save the current configuration using the selected name.",
+		Icon = "save",
+		Style = "Primary",
+		Callback = function()
+			local name = selectedName()
+			local ok, err = window:SaveConfig(name)
+			if ok then
+				configName = name
+				self.ConfigNameInput:Set(name, true)
+				refreshConfigs(name)
+				if self.AutoLoadToggle and self.AutoLoadToggle:Get() then persistAutoLoad(true, name) end
+			end
+			self:_notify(ok and "Configuration saved" or "Save failed", ok and name or tostring(err), ok and "Success" or "Error")
+		end,
+	})
+	local actionRow = c("Frame", {
+		Name = "ConfigurationActions",
+		Size = UDim2.new(1, 0, 0, 56),
+		BackgroundTransparency = 1,
+		LayoutOrder = tab:_nextOrder(),
+		Parent = tab.List,
+	})
+	c("UIListLayout", {
+		FillDirection = Enum.FillDirection.Horizontal,
+		HorizontalAlignment = Enum.HorizontalAlignment.Left,
+		VerticalAlignment = Enum.VerticalAlignment.Center,
+		SortOrder = Enum.SortOrder.LayoutOrder,
+		Padding = UDim.new(0, 8),
+		Parent = actionRow,
+	})
+	local function placeAction(handle, index)
+		if handle and handle._frame then
+			handle._frame.Parent = actionRow
+			handle._frame.LayoutOrder = index
+			handle._frame.Size = UDim2.new(1 / 3, -6, 0, 56)
+		end
+	end
+	local loadButton = tab:Button({
+		Name = "Load",
+		Callback = function()
+			local name = selectedName()
+			local ok, err = window:LoadConfig(name)
+			if ok then
+				configName = name
+				self.ConfigNameInput:Set(name, true)
+				if self.ConfigDropdown then self.ConfigDropdown:Set(name, true) end
+				if self.AutoLoadToggle and self.AutoLoadToggle:Get() then persistAutoLoad(true, name) end
+			end
+			self:_notify(ok and "Configuration loaded" or "Load failed", ok and name or tostring(err), ok and "Success" or "Error")
+		end,
+	})
+	local deleteButton = tab:Button({
+		Name = "Delete Load",
+		Callback = function()
+			local name = selectedName()
+			window:Confirm({
+				Title = "Delete configuration",
+				Content = "Delete '" .. name .. "'? This cannot be undone.",
+				Icon = "trash-2",
+				ConfirmText = "Delete",
+				Callback = function()
+					local ok, err = window:DeleteConfig(name)
+					if ok then
+						configName = "default"
+						self.ConfigNameInput:Set(configName, true)
+						refreshConfigs()
+						if self.AutoLoadToggle and self.AutoLoadToggle:Get() then persistAutoLoad(true, configName) end
+					end
+					self:_notify(ok and "Configuration deleted" or "Delete failed", ok and name or tostring(err), ok and "Info" or "Error")
+				end,
+			})
+		end,
+	})
+	self.AutoLoadToggle = tab:Toggle({
+		Name = "AutoLoad",
+		Default = options.AutoLoadEnabled == true,
+		Callback = function(enabled)
+			persistAutoLoad(enabled, selectedName())
+		end,
+	})
+	placeAction(loadButton, 1)
+	placeAction(deleteButton, 2)
+	placeAction(self.AutoLoadToggle, 3)
+
+	self.ConfigurationItems = {}
+	if type(options.ConfigurationItems) == "table" then
+		for _, definition in ipairs(options.ConfigurationItems) do
+			local handle, err = self:AddConfigurationItem(definition)
+			if not handle then warn("[SilentHub] configuration item skipped: " .. tostring(err)) end
+		end
+	end
 end
 
 function Launcher:CreateModuleWindow(options)
@@ -5298,6 +5563,18 @@ function Launcher:CreateModuleWindow(options)
 	options.BackgroundGroup = "Secondary"
 	options.Responsive = options.Responsive ~= false
 	return f:Window(options)
+end
+
+function Launcher:_syncThemeButtons()
+	for name, button in pairs(self.ThemeButtons or {}) do
+		local selected = name == f.ThemeName
+		if type(button.SetSelected) == "function" then
+			button:SetSelected(selected)
+		end
+		if type(button.SetText) == "function" then
+			button:SetText((selected and "✓  " or "") .. name)
+		end
+	end
 end
 
 function Launcher:SetTheme(name)
@@ -5337,28 +5614,22 @@ function f.CreateLauncher(first, second)
 	end
 	if options.Theme or options.ThemeName then
 		local themeOk, themeError = f:SetTheme(options.Theme or options.ThemeName)
-		if not themeOk then
-			warn("[SilentHub] " .. tostring(themeError))
-		end
+		if not themeOk then warn("[SilentHub] " .. tostring(themeError)) end
 	end
 
 	local windowOptions = table.clone(type(options.WindowOptions) == "table" and options.WindowOptions or {})
-	windowOptions.Name = options.GuiName or windowOptions.Name or "SilentHubLauncher"
+	windowOptions.Name = options.GuiName or windowOptions.Name or "SilentHubMainInterface"
 	windowOptions.Title = options.Title or windowOptions.Title or "SilentHub"
-	windowOptions.SubTitle = options.SubTitle or options.Subtitle or windowOptions.SubTitle or "Control Center"
-	windowOptions.Logo = options.Logo or windowOptions.Logo
-	windowOptions.Size = options.Size or windowOptions.Size or UDim2.fromOffset(700, 500)
-	windowOptions.MinSize = options.MinSize or windowOptions.MinSize or Vector2.new(420, 320)
-	windowOptions.MaxSize = options.MaxSize or windowOptions.MaxSize or Vector2.new(900, 680)
+	windowOptions.SubTitle = options.SubTitle or options.Subtitle or windowOptions.SubTitle or "Main Interface"
+	windowOptions.Logo = optionalImageValue(options.Logo) or windowOptions.Logo or t.Logo
+	windowOptions.Size = options.Size or windowOptions.Size or UDim2.fromOffset(600, 420)
+	windowOptions.MinSize = options.MinSize or windowOptions.MinSize or Vector2.new(360, 270)
+	windowOptions.MaxSize = options.MaxSize or windowOptions.MaxSize or Vector2.new(760, 560)
 	windowOptions.Responsive = options.Responsive ~= false
 	windowOptions.BackgroundGroup = "Primary"
 	local primaryBackground = options.Background
-	if primaryBackground == nil then
-		primaryBackground = options.Fondo
-	end
-	if primaryBackground == nil then
-		primaryBackground = windowOptions.Background
-	end
+	if primaryBackground == nil then primaryBackground = options.Fondo end
+	if primaryBackground == nil then primaryBackground = windowOptions.Background end
 	windowOptions.Background = nil
 	if primaryBackground ~= nil then
 		f:SetBackground("Primary", primaryBackground, options.BackgroundOptions or windowOptions.BackgroundOptions)
@@ -5369,7 +5640,13 @@ function f.CreateLauncher(first, second)
 	if options.Loading ~= nil then
 		windowOptions.Loading = options.Loading
 	elseif windowOptions.Loading == nil then
-		windowOptions.Loading = { Duration = 0.85, Title = "SilentHub", Text = "Opening Main Panel" }
+		windowOptions.Loading = false
+	end
+	if type(windowOptions.ConfigurationSaving) ~= "table" then
+		windowOptions.ConfigurationSaving = { Enabled = true, FileName = options.DefaultConfigName or "default" }
+	else
+		windowOptions.ConfigurationSaving.Enabled = windowOptions.ConfigurationSaving.Enabled ~= false
+		windowOptions.ConfigurationSaving.FileName = windowOptions.ConfigurationSaving.FileName or options.DefaultConfigName or "default"
 	end
 
 	local window = f:Window(windowOptions)
@@ -5378,63 +5655,28 @@ function f.CreateLauncher(first, second)
 		Modules = {},
 		ModuleOrder = {},
 		ModuleSections = {},
-		CommunityEntries = { Collaborators = {}, Friends = {}, Recommendations = {} },
-		CommunityPlaceholders = {},
+		ConfigurationItems = {},
 	}, Launcher)
 	f.Modules = self.Modules
 	f.ActiveLauncher = self
 
-	self.DashboardTab = window:Tab({ Name = "Overview", Desc = "Your central SilentHub dashboard.", Icon = "layout-dashboard" })
+	self.DashboardTab = window:Tab({ Name = "Overview", Desc = "Your central SilentHub workspace.", Icon = "layout-dashboard" })
 	self.ScriptsTab = window:Tab({ Name = "Scripts", Desc = "Open, hide and manage registered modules.", Icon = "blocks" })
-	self.CommunityTab = window:Tab({ Name = "Community", Desc = "Collaborators, friends and recommendations.", Icon = "users" })
-	self.AppearanceTab = window:Tab({ Name = "Appearance", Desc = "Global color themes.", Icon = "palette" })
+	self.ConfigurationTab = window:Tab({ Name = "Configuración", Desc = "Global colors and configuration files.", Icon = "settings-2" })
 
-	self.DashboardTab:Section("Control Center")
+	self.DashboardTab:Section("Main Interface")
 	self.DashboardTab:Paragraph({
-		Name = "Main Panel",
-		Content = "Your central SilentHub interface. Open and manage registered scripts here; the bootstrap loader only starts this panel.",
+		Name = "SilentHub Control Center",
+		Content = "Manage your registered modules and global configuration here. The separate Loader contains the Community section and starts this interface.",
 	})
 	self.DashboardTab:Section("Quick access")
-
 	self.ScriptsTab:Section("Registered modules")
 	self.ScriptsTab:Paragraph({
 		Name = "Module management",
-		Content = "Each entry has an independent window and visibility state. Modules are created once and reused when hidden or shown again.",
+		Content = "Each module has an independent window and visibility state. Windows are created once and reused when shown again.",
 	})
 
-	self.CommunityTab:Section("Collaborators")
-	self.CommunityPlaceholders.Collaborators = self.CommunityTab:Paragraph({ Name = "No collaborators yet", Content = "Add entries through the Collaborators configuration or AddCommunity()." })
-	self.CommunityTab:Section("Friends")
-	self.CommunityPlaceholders.Friends = self.CommunityTab:Paragraph({ Name = "No friends yet", Content = "Add entries through the Friends configuration or AddCommunity()." })
-	self.CommunityTab:Section("Recommendations")
-	self.CommunityPlaceholders.Recommendations = self.CommunityTab:Paragraph({ Name = "No recommendations yet", Content = "Add entries through the Recommendations configuration or AddCommunity()." })
-
-	self.AppearanceTab:Section("Global theme")
-	self.AppearanceTab:Dropdown({
-		Name = "Interface palette",
-		Desc = "Changes every open and future SilentHub window.",
-		Options = themeOrder,
-		Default = f.ThemeName,
-		Callback = function(value)
-			local ok, err = f:SetTheme(value)
-			if not ok then
-				self:_notify("Theme not changed", tostring(err), "Error")
-			else
-				self:_notify("Theme applied", value .. " is now global.", "Success")
-			end
-		end,
-	})
-
-	if type(options.Backgrounds) == "table" then
-		for _, group in ipairs({ "Primary", "Secondary" }) do
-			local config = options.Backgrounds[group]
-			if type(config) == "table" then
-				f:SetBackground(group, config.Image or config.Value, config)
-			elseif type(config) == "string" or type(config) == "number" then
-				f:SetBackground(group, config)
-			end
-		end
-	end
+	self:_buildConfiguration(options)
 
 	local definitions = {}
 	if type(options.Modules) == "table" then
@@ -5453,23 +5695,20 @@ function f.CreateLauncher(first, second)
 			if type(suppliedFactory) == "function" then
 				definition.Create = suppliedFactory
 			elseif type(suppliedFactory) == "table" then
-				for key, value in pairs(suppliedFactory) do
-					definition[key] = value
-				end
+				for key, value in pairs(suppliedFactory) do definition[key] = value end
 			end
 			self:RegisterModule(definition)
 		end
 	end
 
-	for _, category in ipairs({ "Collaborators", "Friends", "Recommendations" }) do
-		local entries = options[category]
-		if type(entries) == "table" then
-			for _, entry in ipairs(entries) do
-				self:AddCommunity(category, entry)
-			end
+	if options.AutoLoadEnabled == true then
+		local configName = tostring(options.AutoLoadConfigName or options.DefaultConfigName or window.ConfigName or "default")
+		local loaded, loadError = window:LoadConfig(configName)
+		if not loaded then
+			self:_notify("AutoLoad unavailable", tostring(loadError), "Warning")
 		end
 	end
-
+	self:_syncThemeButtons()
 	return self
 end
 
